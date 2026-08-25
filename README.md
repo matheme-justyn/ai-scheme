@@ -24,6 +24,14 @@ Piaget distinguished two French words that English collapses into one: *schéma*
 
 The English spelling drops the accent for practical reasons — the properly-accented "schème" isn't ASCII-friendly for a repo slug. This does mean the name reads the same as the *Scheme* programming language (a Lisp dialect); that collision was considered and accepted as low-risk.
 
+## The Occupation: Punchcutter
+
+Every name in this project family pairs a psychologist's term with a vanished occupation that embodies it. This one is the **punchcutter**.
+
+Before a single piece of movable type could be cast, someone had to hand-carve every letterform into a small steel billet — the *punch*. That punch was then struck into softer metal to make a *matrix*, and the matrix is what actually cast the unlimited, identical pieces of type a printer used. Cutting a single punch could take a skilled craftsman an entire day; it was, by most accounts, the hardest job in the whole production chain. The trade is effectively extinct today — a handful of practitioners remain worldwide.
+
+It's a master pattern that strikes another master pattern, which then casts endless faithful copies — a template of templates, not a single reproduced object. That layered structure is closer to what `ai-scheme` actually is than a simpler "one craftsman, many identical outputs" trade would be: a repo template isn't the generated repos themselves, it's the punch that makes the matrix that makes them possible.
+
 ## Status
 
 This repo is newly created. Content is being migrated out of `my-vibe-scaffolding`/`ai-zpd` in stages — see that repo's `.scaffolding/` directory for what's moving here in the meantime.
