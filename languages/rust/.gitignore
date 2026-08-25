@@ -1,0 +1,67 @@
+# Rust specific .gitignore
+# Use this in addition to the root .gitignore when working with Rust projects
+
+# Build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lock file (uncomment for applications, keep for libraries)
+# Cargo.lock
+
+# Backup files
+**/*.rs.bk
+*.orig
+
+# IDE
+*.iml
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Profiling
+*.profdata
+*.profraw
+
+# Benchmark results
+/bench/
+
+# Flamegraph
+flamegraph.svg
+perf.data
+perf.data.old
+
+# Fuzzing
+fuzz/corpus/
+fuzz/artifacts/
+
+# Coverage
+*.gcda
+*.gcno
+*.profdata
+tarpaulin-report.html
+cobertura.xml
+lcov.info
+
+# Documentation
+/doc/
+
+# Audit
+audit.cache
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

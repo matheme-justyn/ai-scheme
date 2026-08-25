@@ -1,0 +1,21 @@
+[toolchain]
+# Specify Rust version for reproducible builds
+channel = "1.75.0"
+# Or use stable channel with minimum version in Cargo.toml
+# channel = "stable"
+
+# Optional: specify components
+components = [
+    "rustfmt",
+    "clippy",
+    "rust-src",
+]
+
+# Optional: specify targets
+# targets = [
+#     "wasm32-unknown-unknown",
+#     "x86_64-unknown-linux-musl",
+# ]
+
+# Optional: specify profile
+# profile = "minimal"  # or "default" or "complete"

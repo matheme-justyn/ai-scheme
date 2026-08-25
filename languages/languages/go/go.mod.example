@@ -1,0 +1,9 @@
+module github.com/your-username/your-project
+
+go 1.21
+
+require (
+	// Add your dependencies here
+	// Example:
+	// github.com/gin-gonic/gin v1.9.1
+)

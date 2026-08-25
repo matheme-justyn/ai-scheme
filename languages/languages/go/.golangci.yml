@@ -1,0 +1,60 @@
+run:
+  timeout: 5m
+  tests: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  
+  govet:
+    enable-all: true
+  
+  gofmt:
+    simplify: true
+  
+  goimports:
+    local-prefixes: github.com/your-org/your-project
+  
+  gocritic:
+    enabled-checks:
+      - appendAssign
+      - assignOp
+      - boolExprSimplify
+      - captLocal
+      - commentFormatting
+      - dupSubExpr
+      - emptyStringTest
+      - ifElseChain
+      - nilValReturn
+      - rangeValCopy
+      - singleCaseSwitch
+      - unlambda
+  
+  revive:
+    confidence: 0.8
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - typecheck
+    - unused
+    - gofmt
+    - goimports
+    - gocritic
+    - revive
+    - misspell
+  
+  disable:
+    - deadcode    # deprecated
+    - varcheck    # deprecated
+    - structcheck # deprecated
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0

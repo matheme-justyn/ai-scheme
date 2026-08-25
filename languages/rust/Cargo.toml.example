@@ -1,0 +1,29 @@
+[package]
+name = "your-project"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "Your project description"
+license = "MIT"
+repository = "https://github.com/your-username/your-project"
+
+[dependencies]
+# Add your runtime dependencies here
+# Example:
+# serde = { version = "1.0", features = ["derive"] }
+# tokio = { version = "1.0", features = ["full"] }
+
+[dev-dependencies]
+# Add your development dependencies here
+# Example:
+# criterion = "0.5"
+
+[[bin]]
+name = "your-project"
+path = "src/main.rs"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true

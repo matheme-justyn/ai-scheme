@@ -1,0 +1,14 @@
+# Runtime dependencies
+# Add your project dependencies here
+
+# Development dependencies
+pytest>=7.4.0
+pytest-cov>=4.1.0
+ruff>=0.1.0
+mypy>=1.7.0
+
+# Example dependencies (uncomment as needed):
+# requests>=2.31.0
+# pydantic>=2.5.0
+# fastapi>=0.104.0
+# sqlalchemy>=2.0.0

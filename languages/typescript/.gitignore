@@ -1,0 +1,59 @@
+# TypeScript specific .gitignore
+# Use this in addition to the root .gitignore when working with TypeScript projects
+
+# Dependencies
+node_modules/
+jspm_packages/
+
+# Build outputs
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Next.js
+.next/
+next-env.d.ts
+
+# Nuxt.js
+.nuxt/
+.output/
+
+# Vite
+.vite/
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Yarn
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# pnpm
+.pnpm-debug.log*
+
+# Turborepo
+.turbo/
+
+# Vercel
+.vercel
+
+# Environment variables (use .env.example instead)
+.env*.local
