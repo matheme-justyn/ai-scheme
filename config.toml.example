@@ -1,0 +1,118 @@
+# ai-scheme configuration
+# First-pass split from my-vibe-scaffolding's config.toml.example — needs a real redesign pass,
+# this just preserves the sections that were about skeleton/doc conventions rather than runtime mechanism.
+
+# Vibe Scaffolding Configuration
+# Copy this file to config.toml and customize for your workspace
+
+# ==============================================================================
+# Internationalization (i18n) - Natural Language Support
+# ==============================================================================
+# Uses BCP 47 language tags (RFC 5646)
+# See: https://www.rfc-editor.org/rfc/rfc5646.html
+#
+# Available locales:
+#   - en-US: English (United States) - Default, always available in Git
+#   - zh-TW: Traditional Chinese (Taiwan) - Available in Git
+#   - zh-HK: Traditional Chinese (Hong Kong) - Future
+#   - zh-CN: Simplified Chinese (China) - Future
+#   - ja-JP: Japanese (Japan) - Future
+#   - en-GB: English (United Kingdom) - Future
+
+[i18n]
+# Your preferred natural language for documentation and templates
+# This determines which i18n/locales/{lang}/ directory to use for:
+#   - AGENTS.md coding conventions and commit message format
+#   - README.md section descriptions
+#   - GitHub issue/PR templates
+#   - ADR (Architecture Decision Record) templates
+primary_locale = "zh-TW"
+
+# Fallback language if translation is missing
+# Should always be "en-US" (the base language committed to Git)
+fallback_locale = "en-US"
+
+# Which locales to commit to Git repository
+# Recommended: Only commit en-US (base) and your team's primary language
+# Other locales can be generated locally or added later
+commit_locales = ["en-US", "zh-TW"]
+
+# Translation workflow settings (if you're doing translation work)
+[i18n.translation]
+# Enable translation mode (shows missing keys, validates completeness)
+enabled = false
+
+# Source language for translation work
+source_lang = "zh-TW"
+
+# Target languages you're working on
+target_langs = ["en-US", "ja-JP"]
+
+# Validation: ensure all keys exist in all enabled locales
+strict_validation = false
+
+# README language strategy
+# Controls how README files are generated and organized
+[i18n.readme]
+# Strategy options:
+#   - "separate": Separate files (README.md in primary_locale, README.{lang}.md for others)
+#                 Example: README.md (zh-TW), README.en-US.md, README.ja-JP.md
+#                 Recommended for: Professional projects, 3+ languages, cleaner structure
+#
+#   - "bilingual": Single README.md with both languages side-by-side
+#                  Format: 中文 | English in same file (headers, paragraphs, tables)
+#                  Recommended for: Small projects, 2 languages max
+#
+#   - "primary_only": Single README.md in primary_locale only, no translations
+#                     Recommended for: Internal projects, single team language
+strategy = "separate"
+
+# When strategy = "separate":
+# - README.md contains content in primary_locale
+# - Additional files: README.en-US.md, README.zh-TW.md, etc. for each commit_locales
+# - Language switcher added at top of each README
+#
+# When strategy = "bilingual":
+# - Single README.md with bilingual content (follows .template/docs/README_BILINGUAL_FORMAT.md)
+# - Primary language appears first, then English (or other language)
+#
+# When strategy = "primary_only":
+# - Only README.md in primary_locale, no additional language files
+
+
+[languages]
+# Your primary programming languages for this project
+# This is informational only - helps document the project's tech stack
+primary = []  # e.g., ["go", "python", "typescript"]
+
+# Whether to include language-specific .gitignore patterns by default
+# Currently manual - use: cat languages/{lang}/.gitignore >> .gitignore
+auto_merge_gitignore = false
+
+[academic]
+# Citation style for academic writing
+citation_style = "APA"  # APA | MLA | Chicago | IEEE | Vancouver
+
+# Academic field
+field = "computer_science"  # computer_science | social_science | humanities | natural_science | medicine
+
+# Document languages (for bilingual academic work)
+primary_language = "zh-TW"
+secondary_language = "en-US"
+
+[github]
+# Generate multilingual PR template
+use_pr_template = true  # Generates .github/PULL_REQUEST_TEMPLATE.md
+
+# PR template language follows [i18n].primary_locale
+# Template files: .scaffolding/templates/pr/PULL_REQUEST_TEMPLATE.{lang}.md
+
+[terminology]
+# Terminology loading priority (highest to lowest)
+# When same term exists in multiple files, which one wins?
+priority = ["project", "domain", "common"]  # project > domain > common
+
+# Terminology sources
+# - project: .agents/terminology/custom.md (user-defined)
+# - domain: .scaffolding/terminology/{domain}/*.md (software/academic/documentation)
+# - common: .scaffolding/terminology/terminology.md (universal terms)
