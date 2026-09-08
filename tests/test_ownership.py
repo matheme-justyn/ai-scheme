@@ -8,7 +8,7 @@ import pytest
 import yaml
 
 from ai_scheme import ownership
-from ai_scheme.paths import package_root
+from ai_scheme.paths import UNINSTALL_RELPATH, package_root
 
 MINIMAL = {
     "version": 1,
@@ -118,7 +118,7 @@ def test_generated_files_are_in_sync_with_the_manifest(manifest: ownership.Manif
     copier_text = (root / "copier.yml").read_text(encoding="utf-8")
     assert ownership.sync_copier(copier_text, manifest) == copier_text
 
-    uninstall = (root / "docs" / "uninstall.md").read_text(encoding="utf-8")
+    uninstall = (root / UNINSTALL_RELPATH).read_text(encoding="utf-8")
     assert ownership.uninstall_doc(manifest) == uninstall
 
 

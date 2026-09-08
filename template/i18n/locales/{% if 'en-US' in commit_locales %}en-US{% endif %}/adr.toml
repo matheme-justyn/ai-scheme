@@ -1,0 +1,105 @@
+# ADR (Architecture Decision Record) template translations for English (United States)
+# BCP 47 Language Tag: en-US
+
+[meta]
+language_tag = "en-US"
+language_name = "English (United States)"
+language_native = "English (US)"
+
+[template]
+title_format = "# N. Decision Title"
+date_label = "Date: YYYY-MM-DD"
+status_title = "## Status"
+status_options = "Accepted | Proposed | Deprecated | Superseded by ADR-XXXX"
+context_title = "## Context"
+context_desc = "Describe the problem background, requirements, constraints, etc."
+decision_title = "## Decision"
+decision_desc = "Describe our decision and solution"
+consequences_title = "## Consequences"
+consequences_desc = "Describe the impact of the decision (positive and negative)"
+
+[adr_0001]
+title = "1. Record architecture decisions"
+date = "2026-02-25"
+status = "Accepted"
+context_title = "## Context"
+context_p1 = "During software development, we make many important architectural decisions. These decisions affect the project's long-term direction, technology choices, system design, and other critical aspects. However, as time passes and team members change, the background context, considerations, and trade-offs of these decisions often gradually fade or are lost."
+context_p2 = "When new members join the team, or when we need to revisit a design decision, we often face the following problems:"
+context_issue1 = "1. **Lost decision context**: Unclear why a decision was made"
+context_issue2 = "2. **Repeated discussions**: The same issues are discussed repeatedly, wasting time"
+context_issue3 = "3. **Knowledge loss**: Important decision background is lost when senior members leave"
+context_issue4 = "4. **Lack of traceability**: Difficult to understand the historical trajectory of system evolution"
+context_issue5 = "5. **Declining decision quality**: Without historical context, new decisions may conflict with previous designs"
+context_p3 = "We need a lightweight and structured way to record these important architectural decisions."
+
+decision_title = "## Decision"
+decision_p1 = "We will adopt **Architecture Decision Records (ADR)** to record all important architectural decisions."
+decision_what_title = "### What is ADR?"
+decision_what_p1 = "ADR is a lightweight documentation format for recording architectural decisions. Each ADR includes:"
+decision_what_title_item = "- **Title**: Brief description of the decision with a unique number"
+decision_what_date = "- **Date**: Date when the decision was made"
+decision_what_status = "- **Status**: Current status of the decision (Proposed, Accepted, Deprecated, Superseded)"
+decision_what_context = "- **Context**: Describes the problem and decision background"
+decision_what_decision = "- **Decision**: Describes our decision and solution"
+decision_what_consequences = "- **Consequences**: Explains the impact of the decision (positive and negative)"
+
+decision_rules_title = "### ADR Usage Rules"
+decision_rule1 = "1. **All important architectural decisions should be recorded**, including but not limited to:"
+decision_rule1_tech = "   - Technology selection (frameworks, libraries, tools)"
+decision_rule1_arch = "   - Architectural patterns (MVC, Microservices, Event-driven, etc.)"
+decision_rule1_db = "   - Database design decisions"
+decision_rule1_api = "   - API design principles"
+decision_rule1_deploy = "   - Deployment strategy"
+decision_rule1_security = "   - Security-related decisions"
+decision_rule2 = "2. **ADRs should be written immediately when decisions are made**, not retrospectively"
+decision_rule3 = "3. **Once Accepted, ADRs should not be modified** (except for typo fixes)"
+decision_rule3_change = "   - If a decision needs to be changed, create a new ADR to replace the old one"
+decision_rule3_superseded = "   - Change the old ADR status to \"Superseded by ADR-XXXX\""
+decision_rule4 = "4. **ADR file naming format**: `NNNN-title-with-dashes.md`"
+decision_rule4_number = "   - NNNN: Four-digit number, starting from 0001 and incrementing"
+decision_rule4_title = "   - title-with-dashes: Title separated by hyphens"
+decision_rule5 = "5. **ADR storage location**: `docs/adr/` directory"
+
+decision_example_title = "### ADR Example"
+decision_example_code = """```markdown
+# N. Decision Title
+
+Date: YYYY-MM-DD
+
+## Status
+
+Accepted | Proposed | Deprecated | Superseded by ADR-XXXX
+
+## Context
+
+Describe the problem background, requirements, constraints, etc.
+
+## Decision
+
+Describe our decision and solution
+
+## Consequences
+
+Describe the impact of the decision (positive and negative)
+```"""
+
+consequences_title = "## Consequences"
+consequences_positive_title = "### Positive Impact"
+consequences_positive_1 = "- **Knowledge preservation**: Background and rationale of architectural decisions are explicitly recorded, not lost due to staff turnover"
+consequences_positive_2 = "- **Improved communication efficiency**: New members can quickly understand the important decision context of the project"
+consequences_positive_3 = "- **Avoid repeated discussions**: Issues that have been discussed have clear conclusions to refer to"
+consequences_positive_4 = "- **Improved decision quality**: Forces us to think deeply when making decisions and clearly explain the reasons"
+consequences_positive_5 = "- **Traceability**: Can clearly track the evolution history of system design"
+consequences_positive_6 = "- **Tool integration**: ADRs are plain text files that can be easily integrated into version control and code review processes"
+
+consequences_challenges_title = "### Possible Challenges"
+consequences_challenge_1 = "- **Requires extra time**: Writing ADRs takes time"
+consequences_challenge_2 = "- **Maintenance cost**: Need to ensure ADR numbers don't duplicate and statuses are correctly updated"
+consequences_challenge_3 = "- **Team discipline**: Need team members to develop the habit of recording ADRs"
+consequences_challenge_4 = "- **Judgment criteria**: Need to clearly define what decisions need to be recorded as ADRs"
+consequences_p1 = "However, considering the long-term benefits of knowledge management and team collaboration, these costs are worthwhile."
+
+references_title = "## References"
+reference_1 = "- [Architecture Decision Records](https://adr.github.io/)"
+reference_2 = "- [Documenting Architecture Decisions by Michael Nygard](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)"
+reference_3 = "- [ADR GitHub Organization](https://github.com/joelparkerhenderson/architecture-decision-record)"

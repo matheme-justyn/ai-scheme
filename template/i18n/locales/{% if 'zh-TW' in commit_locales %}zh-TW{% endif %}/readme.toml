@@ -1,0 +1,83 @@
+# README.md translations for Traditional Chinese (Taiwan)
+# BCP 47 Language Tag: zh-TW
+
+[meta]
+language_tag = "zh-TW"
+language_name = "Traditional Chinese (Taiwan)"
+language_native = "繁體中文（台灣）"
+
+[header]
+title = "My Vibe Scaffolding"
+tagline = "AI 驅動的專案鷹架模板"
+version_badge = "版本"
+license_badge = "授權"
+
+[concept]
+title = "這是什麼？"
+description = "**AI 驅動的專案鷹架模板**，用於快速建立專案並遵循最佳實踐。"
+theory_desc = "基於心理學家 Lev Vygotsky 的鷹架理論 — 在需要時提供結構支援，不需要時可移除。"
+
+[core_features]
+title = "核心特色"
+ai_integration = "🤖 **AI Agent 整合** - `AGENTS.md` + Skills 系統支援 OpenCode/Cursor/Claude"
+version_mgmt = "📦 **版本管理** - Pre-push hooks 強制執行版本更新"
+i18n = "🌐 **多語言支援** - BCP 47 i18n 文件國際化"
+smart_setup = "🛠️ **智慧設定** - AI agent 自動處理首次設定"
+
+[installation]
+title = "安裝"
+ai_prompt_title = "**統一 AI Prompt（適用所有情境）：**"
+ai_prompt = "請從 https://github.com/matheme-justyn/my-vibe-scaffolding 導入鷹架系統到目前專案"
+how_it_works = "**AI 會自動偵測情境並處理：**"
+scenario_a_title = "### 情境 A：現有專案導入鷹架"
+scenario_a = "如果目前目錄已有專案檔案（`.git/`、`package.json` 等）：
+1. 從 GitHub 下載 `.scaffolding/` 目錄
+2. 下載 `AGENTS.md`、`config.toml.example`
+3. 執行 `./.scaffolding/scripts/init-project.sh`
+4. 腳本偵測無 `.template-version` → **首次安裝模式**"
+scenario_b_title = "### 情境 B：建立全新專案"
+scenario_b = "如果要建立全新專案：
+1. 在 GitHub 點擊 **\"Use this template\"**
+2. Clone 你的新 repository
+3. 執行 `./.scaffolding/scripts/init-project.sh`
+4. 腳本偵測無 `.template-version` → **首次安裝模式**"
+key_benefit = "**核心優勢**：一個 prompt 搞定所有情境 — AI 自動處理剩下的"
+
+[unified_command]
+title = "腳本運作方式"
+description = "`init-project.sh` 腳本會智慧偵測你的情況："
+first_time_mode = "**首次模式**（無 `.template-version` 檔案）：
+- 詢問專案資訊
+- 建立 VERSION、README.md、LICENSE
+- 設定 Git hooks
+- 建立 `.template-version` 追蹤使用的模板版本"
+update_mode = "**更新模式**（`.template-version` 已存在）：
+- 比對目前版本與模板版本
+- 整併 agent 配置（`.claude`、`.roo` → `.agents`）
+- 重新安裝 Git hooks（可能有新功能）
+- 更新 `.template-version`"
+when_to_run = "**何時手動執行：**
+- 從 template 建立新專案後
+- 想要更新模板功能時
+- 需要整併分散的 agent 配置時"
+
+[documentation]
+title = "文件"
+features = "📖 **[完整功能說明](./.scaffolding/docs/FEATURES.md)** - v2.0.0 技術細節"
+agents = "🤖 **[AGENTS.md](./AGENTS.md)** - AI agent 指令和規範"
+changelog = "📝 **[CHANGELOG.md](./.scaffolding/CHANGELOG.md)** - 版本變更歷史"
+
+[tech_stack]
+title = "技術棧"
+description = "為什麼選擇這些技術？"
+opencode = "**OpenCode**（開源 AI）- 75+ 模型，CLI 優先 | 避免供應商鎖定"
+agents_md = "**AGENTS.md 標準** - 跨工具相容 | AI 理解專案慣例"
+skills = "**Skills 系統** - 可重用的工作流程 | 編碼最佳實踐"
+bundles = "**Bundles & Workflows** - 角色導向的集合 | 快速載入上下文"
+superpowers = "我們使用 [superpowers](https://github.com/ohmyopencode/superpowers) - 社群驅動的 AI 工作流程。"
+
+[footer]
+tagline = "基於 Vygotsky 鷹架理論 | AI 驅動 | 為開發者設計"
+links_docs = "文件"
+links_changelog = "變更記錄"
+links_github = "GitHub"

@@ -1,0 +1,105 @@
+# ADR (Architecture Decision Record) template translations for Traditional Chinese (Taiwan)
+# BCP 47 Language Tag: zh-TW
+
+[meta]
+language_tag = "zh-TW"
+language_name = "Traditional Chinese (Taiwan)"
+language_native = "繁體中文（台灣）"
+
+[template]
+title_format = "# N. 決策標題"
+date_label = "Date: YYYY-MM-DD"
+status_title = "## Status"
+status_options = "Accepted | Proposed | Deprecated | Superseded by ADR-XXXX"
+context_title = "## Context"
+context_desc = "描述問題背景、需求、約束條件等"
+decision_title = "## Decision"
+decision_desc = "描述我們的決定和解決方案"
+consequences_title = "## Consequences"
+consequences_desc = "描述決策的影響（正面和負面）"
+
+[adr_0001]
+title = "1. Record architecture decisions"
+date = "2026-02-25"
+status = "Accepted"
+context_title = "## Context"
+context_p1 = "在軟體開發過程中，我們會做出許多重要的架構決策。這些決策會影響專案的長期發展方向、技術選型、系統設計等關鍵面向。然而，隨著時間推移和團隊成員的變動，這些決策的背景脈絡、考量因素和權衡取捨往往會逐漸模糊或遺失。"
+context_p2 = "當新成員加入團隊，或是需要重新審視某個設計決策時，我們常常面臨以下問題："
+context_issue1 = "1. **決策脈絡消失**：不清楚當初為什麼做出某個決定"
+context_issue2 = "2. **重複討論**：相同的問題被反覆討論，浪費時間"
+context_issue3 = "3. **知識流失**：資深成員離開後，重要的決策背景也隨之消失"
+context_issue4 = "4. **缺乏追溯性**：難以理解系統演進的歷史軌跡"
+context_issue5 = "5. **決策品質下降**：因為缺乏歷史脈絡，新的決策可能與先前的設計衝突"
+context_p3 = "我們需要一個輕量級且結構化的方式來記錄這些重要的架構決策。"
+
+decision_title = "## Decision"
+decision_p1 = "我們將採用 **Architecture Decision Records (ADR)** 來記錄所有重要的架構決策。"
+decision_what_title = "### 什麼是 ADR？"
+decision_what_p1 = "ADR 是一種輕量級的文件格式，用於記錄架構決策。每個 ADR 包含："
+decision_what_title_item = "- **標題**：簡短描述決策內容，並賦予唯一編號"
+decision_what_date = "- **日期**：決策的制定日期"
+decision_what_status = "- **狀態**：決策的當前狀態（Proposed, Accepted, Deprecated, Superseded）"
+decision_what_context = "- **背景**（Context）：描述面臨的問題和決策背景"
+decision_what_decision = "- **決策**（Decision）：描述我們的決定和解決方案"
+decision_what_consequences = "- **後果**（Consequences）：說明決策帶來的影響（正面和負面）"
+
+decision_rules_title = "### ADR 的使用規則"
+decision_rule1 = "1. **所有重要的架構決策都應該被記錄**，包括但不限於："
+decision_rule1_tech = "   - 技術選型（框架、函式庫、工具）"
+decision_rule1_arch = "   - 架構模式（MVC, Microservices, Event-driven 等）"
+decision_rule1_db = "   - 資料庫設計決策"
+decision_rule1_api = "   - API 設計原則"
+decision_rule1_deploy = "   - 部署策略"
+decision_rule1_security = "   - 安全性相關決策"
+decision_rule2 = "2. **ADR 應該在決策制定時立即撰寫**，不要事後補寫"
+decision_rule3 = "3. **ADR 一旦 Accepted 就不應修改**（除了修正錯字）"
+decision_rule3_change = "   - 如果決策需要變更，應該建立新的 ADR 來取代舊的"
+decision_rule3_superseded = "   - 舊的 ADR 狀態改為 \"Superseded by ADR-XXXX\""
+decision_rule4 = "4. **ADR 檔案命名格式**：`NNNN-title-with-dashes.md`"
+decision_rule4_number = "   - NNNN：四位數編號，從 0001 開始遞增"
+decision_rule4_title = "   - title-with-dashes：用連字號分隔的標題"
+decision_rule5 = "5. **ADR 存放位置**：`docs/adr/` 目錄"
+
+decision_example_title = "### ADR 範例"
+decision_example_code = """```markdown
+# N. 決策標題
+
+Date: YYYY-MM-DD
+
+## Status
+
+Accepted | Proposed | Deprecated | Superseded by ADR-XXXX
+
+## Context
+
+描述問題背景、需求、約束條件等
+
+## Decision
+
+描述我們的決定和解決方案
+
+## Consequences
+
+描述決策的影響（正面和負面）
+```"""
+
+consequences_title = "## Consequences"
+consequences_positive_title = "### 正面影響"
+consequences_positive_1 = "- **知識保存**：架構決策的背景和理由被明確記錄，不會因人員流動而流失"
+consequences_positive_2 = "- **提升溝通效率**：新成員可以快速了解專案的重要決策脈絡"
+consequences_positive_3 = "- **避免重複討論**：已經討論過的議題有明確的結論可以參考"
+consequences_positive_4 = "- **提升決策品質**：強迫我們在做決策時深思熟慮，並清楚說明理由"
+consequences_positive_5 = "- **追溯性**：可以清楚追蹤系統設計的演進歷史"
+consequences_positive_6 = "- **工具整合**：ADR 是純文字檔案，可以輕鬆整合到版本控制、code review 流程中"
+
+consequences_challenges_title = "### 可能的挑戰"
+consequences_challenge_1 = "- **需要額外時間**：撰寫 ADR 需要花費時間"
+consequences_challenge_2 = "- **維護成本**：需要確保 ADR 的編號不重複、狀態正確更新"
+consequences_challenge_3 = "- **團隊紀律**：需要團隊成員養成記錄 ADR 的習慣"
+consequences_challenge_4 = "- **判斷標準**：需要明確定義什麼樣的決策需要記錄成 ADR"
+consequences_p1 = "然而，考量到長期的知識管理和團隊協作效益，這些成本是值得的。"
+
+references_title = "## References"
+reference_1 = "- [Architecture Decision Records](https://adr.github.io/)"
+reference_2 = "- [Documenting Architecture Decisions by Michael Nygard](https://cognitect.com/blog/2011/11/15/documenting-architecture-decisions)"
+reference_3 = "- [ADR GitHub Organization](https://github.com/joelparkerhenderson/architecture-decision-record)"

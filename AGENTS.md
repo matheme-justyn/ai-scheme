@@ -4,7 +4,7 @@
 
 ## Coding Conventions
 
-**Core Principles** (full details in [`docs/STYLE_GUIDE.md`](./docs/STYLE_GUIDE.md)):
+**Core Principles** (full details in [`docs/STYLE_GUIDE.md`](./docs/guides/STYLE_GUIDE.md)):
 
 - **永遠先寫測試** (Test-First): 所有新功能和 bug 修復都必須先寫測試
   - Use TDD workflow (Red-Green-Refactor)
@@ -174,15 +174,15 @@ For detailed information, see [`i18n/README.md`](./i18n/README.md).
 
 ### Core Principles
 
-1. **Read First**: Before creating ANY new document, check [`docs/DOCUMENTATION_GUIDELINES.md`](./docs/DOCUMENTATION_GUIDELINES.md)
+1. **Read First**: Before creating ANY new document, check [`docs/DOCUMENTATION_GUIDELINES.md`](./docs/guides/DOCUMENTATION_GUIDELINES.md)
 2. **Root Level Simplicity**: Keep root directory minimal (only core files)
 3. **No Intermediate Files**: No `GET_STARTED.md`, `TASK_*.md`, etc.
 4. **Template vs Project**: Distinguish framework docs from project-specific docs
 
 ### Required Reading
 
-- **[`docs/DOCUMENTATION_GUIDELINES.md`](./docs/DOCUMENTATION_GUIDELINES.md)** - File organization standards (MUST READ)
-- **[`docs/README_GUIDE.md`](./docs/README_GUIDE.md)** - How to write project README when using this template
+- **[`docs/DOCUMENTATION_GUIDELINES.md`](./docs/guides/DOCUMENTATION_GUIDELINES.md)** - File organization standards (MUST READ)
+- **[`docs/README_GUIDE.md`](./docs/guides/README_GUIDE.md)** - How to write project README when using this template
 - **`ai-scheme update`** - How to sync template updates (see #5; the old TEMPLATE_SYNC.md did not move to this repo)
 
 ### When Creating Documents
@@ -305,5 +305,5 @@ Breaking changes require users to modify their code/config. If they don't need t
 **For template users:**
 - After "Use this template": run `./.scaffolding/scripts/init-project.sh`
 - This creates `.template-version` to track which template version you're using
-- See [`docs/README_GUIDE.md`](./docs/README_GUIDE.md) for project README guidance
+- See [`docs/README_GUIDE.md`](./docs/guides/README_GUIDE.md) for project README guidance
 
