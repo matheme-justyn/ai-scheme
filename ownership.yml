@@ -46,6 +46,12 @@ paths:
   - path: .scheme/config.yml
     kind: template
     note: Copier answers file. The single source of skeleton-layer settings.
+  - path: .scheme/README.md
+    kind: template
+    note: >-
+      Orientation for the answers file. Copier owns the header of config.yml
+      itself, so the explanation of why a project can hold two configuration
+      files lives beside it rather than inside it -- see ADR 0008.
   - path: ownership.yml
     kind: template
     note: This file.
@@ -78,6 +84,11 @@ paths:
   - path: docs/uninstall.md
     kind: generated
     source: ownership.yml
+  - path: docs/config-boundary.md
+    kind: template
+    note: >-
+      Why a project sees both .scheme/config.yml and config.toml, and which
+      layer owns which keys.
   - path: docs/status-interface-contract.md
     kind: template
     note: >-
