@@ -1,0 +1,121 @@
+# File ownership manifest
+#
+# The single source of truth for "who owns which path" in a generated project.
+# `copier.yml`'s _exclude / _skip_if_exists, the uninstall documentation, the
+# adopt report, and the update conflict rules are all derived from this file --
+# nothing re-states the list by hand.
+#
+# See ADR 0008. This replaces the directory-name isolation of ADR 0005.
+
+version: 1
+
+# Every entry's `kind` must be one of these. The semantics are what `update`
+# does to a path that already exists in the target project.
+kinds:
+  template:
+    summary: Rendered by the template and overwritten on update.
+    update: overwrite
+    uninstall: delete
+  project:
+    summary: Seeded once at create time, never touched again.
+    update: never-touch
+    uninstall: keep
+  managed-block:
+    summary: Only the delimited block is rendered; the rest belongs to the project.
+    update: replace-block
+    uninstall: remove-block
+  merge:
+    summary: Ordered union with what the project already has; no line is removed.
+    update: union
+    uninstall: remove-contributed-lines
+  generated:
+    summary: Rebuilt from a declared source; never edited directly.
+    update: regenerate
+    uninstall: delete
+
+# Paths that exist in this template repository but must never be copied into a
+# generated project. These become copier.yml's _exclude.
+template_repo_only:
+  - copier.yml
+  - ownership.yml
+  - .git
+  - .github/workflows/template-ci.yml
+
+paths:
+  # --- Template infrastructure -------------------------------------------
+  - path: .scheme/config.yml
+    kind: template
+    note: Copier answers file. The single source of skeleton-layer settings.
+  - path: ownership.yml
+    kind: template
+    note: This file.
+  - path: schemas/
+    kind: template
+  - path: scripts/
+    kind: template
+    note: Lifecycle and verification entry points.
+  - path: hooks/
+    kind: template
+  - path: .github/workflows/
+    kind: template
+  - path: .github/ISSUE_TEMPLATE/
+    kind: template
+  - path: .github/PULL_REQUEST_TEMPLATE.md
+    kind: template
+  - path: policies/
+    kind: template
+  - path: i18n/
+    kind: template
+  - path: .vscode/settings.json
+    kind: template
+
+  # --- Documentation the template maintains ------------------------------
+  - path: docs/guides/
+    kind: template
+    note: Style, git workflow, documentation and writing guides.
+  - path: docs/terminology/
+    kind: template
+  - path: docs/uninstall.md
+    kind: generated
+    source: ownership.yml
+  - path: docs/status-interface-contract.md
+    kind: template
+    note: >-
+      Defines how an agent calls this layer's lifecycle interface. Deliberately
+      not named "install" -- see ADR 0007.
+
+  # --- Project content, seeded once --------------------------------------
+  - path: docs/adr/
+    kind: project
+    note: >-
+      Decision records belong to the project. The template seeds ADR 0001 and
+      the README, then never touches this directory again.
+  - path: docs/specs/
+    kind: project
+  - path: src/
+    kind: project
+  - path: tests/
+    kind: project
+  - path: CHANGELOG.md
+    kind: project
+  - path: LICENSE
+    kind: project
+
+  # --- Mixed ownership ---------------------------------------------------
+  - path: AGENTS.md
+    kind: managed-block
+    block: ai-scheme:conventions
+    note: >-
+      The template owns the conventions block. Everything outside it is the
+      project's, including any project-specific agent instructions.
+  - path: .gitignore
+    kind: merge
+    note: >-
+      Language profile patterns are appended as a delimited section. Existing
+      project entries are never removed.
+  - path: README.md
+    kind: generated
+    source: i18n/locales/<readme_primary_language>/readme.toml
+    note: >-
+      Regenerated from the i18n sources plus the answers file. Edit the sources,
+      not the output. Additional language files follow readme_strategy.

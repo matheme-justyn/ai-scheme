@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/matheme-justyn/ai-scheme/schemas/scheme-config.schema.json",
+  "title": "ai-scheme answers file",
+  "description": "Schema for .scheme/config.yml, the single source of skeleton-layer settings. Mechanism-layer settings live in ai-zpd's config.toml and are not described here -- see ADR 0008.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "project_name",
+    "project_slug",
+    "languages",
+    "branch_strategy",
+    "readme_primary_language",
+    "readme_strategy",
+    "release_phase",
+    "collaboration_mode",
+    "project_visibility"
+  ],
+  "properties": {
+    "_src_path": {
+      "type": "string",
+      "description": "Written by Copier: where this project was generated from."
+    },
+    "_commit": {
+      "type": "string",
+      "description": "Written by Copier: the template version this project is at. Read by `ai-scheme status` as current_version."
+    },
+    "project_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Human-readable project name."
+    },
+    "project_slug": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$",
+      "description": "Repository and directory name. Lowercase, digits and hyphens."
+    },
+    "project_description": {
+      "type": "string",
+      "maxLength": 350,
+      "default": ""
+    },
+    "languages": {
+      "type": "array",
+      "uniqueItems": true,
+      "default": [],
+      "items": {
+        "enum": ["go", "python", "rust", "typescript"]
+      },
+      "description": "Language profiles to install. May be empty -- a docs-only project is a valid project."
+    },
+    "branch_strategy": {
+      "enum": ["main", "delivery"],
+      "default": "main",
+      "description": "`main` is trunk-based. `delivery` adds a long-lived delivery branch that is never pushed to directly."
+    },
+    "readme_primary_language": {
+      "enum": ["en-US", "zh-TW"],
+      "default": "en-US",
+      "description": "BCP 47 tag. Only locales committed to this template are offered."
+    },
+    "readme_strategy": {
+      "enum": ["separate", "bilingual", "primary_only"],
+      "default": "separate",
+      "description": "separate: README.md plus README.<lang>.md per locale. bilingual: one file, both languages. primary_only: no translations."
+    },
+    "commit_locales": {
+      "type": "array",
+      "uniqueItems": true,
+      "default": ["en-US"],
+      "items": { "enum": ["en-US", "zh-TW"] },
+      "description": "Locales whose i18n sources are committed. Must contain readme_primary_language."
+    },
+    "release_phase": {
+      "enum": ["alpha", "beta", "release"],
+      "default": "alpha",
+      "description": "Governance strength. Moves forward only -- see ADR 0009."
+    },
+    "collaboration_mode": {
+      "enum": ["solo", "team"],
+      "default": "solo",
+      "description": "Whether a second human can review and approve. Orthogonal to release_phase -- see ADR 0010."
+    },
+    "project_visibility": {
+      "enum": ["public", "private"],
+      "default": "public",
+      "description": "Declared, not detected. Drives enable_pages defaults and capability degradation reporting."
+    },
+    "enable_pages": {
+      "type": "boolean",
+      "default": true,
+      "description": "Publish the decision site to GitHub Pages. Defaults to false when project_visibility is private -- see ADR 0013."
+    },
+    "enable_pr_template": {
+      "type": "boolean",
+      "default": true
+    },
+    "enable_academic_docs": {
+      "type": "boolean",
+      "default": false,
+      "description": "Install the academic writing, citation and literature review guides."
+    },
+    "citation_style": {
+      "enum": ["APA", "MLA", "Chicago", "IEEE", "Vancouver"],
+      "default": "APA",
+      "description": "Only meaningful when enable_academic_docs is true."
+    },
+    "academic_field": {
+      "enum": [
+        "computer_science",
+        "social_science",
+        "humanities",
+        "natural_science",
+        "medicine"
+      ],
+      "default": "computer_science",
+      "description": "Only meaningful when enable_academic_docs is true."
+    },
+    "enable_terminology": {
+      "type": "boolean",
+      "default": true,
+      "description": "Install the bilingual terminology tables."
+    },
+    "terminology_domains": {
+      "type": "array",
+      "uniqueItems": true,
+      "default": ["software"],
+      "items": { "enum": ["software", "academic"] }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "readme_strategy": { "const": "bilingual" } },
+        "required": ["readme_strategy"]
+      },
+      "then": {
+        "properties": {
+          "commit_locales": { "minItems": 2, "maxItems": 2 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "readme_strategy": { "const": "primary_only" } },
+        "required": ["readme_strategy"]
+      },
+      "then": {
+        "properties": {
+          "commit_locales": { "maxItems": 1 }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+Template payload lands here in #5 (create/adopt/update as dry-run plans) and #12
+(generated fixtures). copier.yml already points at this directory via
+_subdirectory, so that the question set and the ownership manifest can be
+reviewed and tested before any file is moved under it.

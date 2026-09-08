@@ -1,0 +1,179 @@
+# Copier template definition for ai-scheme.
+#
+# Answers are written to a single file, `.scheme/config.yml`, validated against
+# schemas/scheme-config.schema.json. Mechanism-layer settings live in ai-zpd's
+# own config.toml and are not asked here -- see ADR 0008.
+#
+# The _exclude and _skip_if_exists lists at the bottom are GENERATED from
+# ownership.yml. Do not edit them by hand; run `ai-scheme ownership sync`.
+
+_subdirectory: template
+_answers_file: .scheme/config.yml
+_templates_suffix: .jinja
+_min_copier_version: "9.0.0"
+
+# --- Questions ----------------------------------------------------------
+
+project_name:
+  type: str
+  help: Project name, as a human would write it
+  validator: "{% if not project_name %}Required{% endif %}"
+
+project_slug:
+  type: str
+  help: Repository and directory name (lowercase, digits, hyphens)
+  default: "{{ project_name|lower|replace(' ', '-')|replace('_', '-') }}"
+  validator: >-
+    {% if not project_slug | regex_search('^[a-z0-9][a-z0-9-]{0,62}[a-z0-9]$') %}
+    Must be lowercase letters, digits and hyphens, 2-64 characters
+    {% endif %}
+
+project_description:
+  type: str
+  help: One sentence describing the project
+  default: ""
+
+languages:
+  type: str
+  help: Language profiles to install (may be none -- a docs-only project is valid)
+  multiselect: true
+  choices:
+    Go: go
+    Python: python
+    Rust: rust
+    TypeScript: typescript
+  default: []
+
+branch_strategy:
+  type: str
+  help: Branching model
+  choices:
+    Trunk-based, work merges to main: main
+    Long-lived delivery branch, never pushed to directly: delivery
+  default: main
+
+readme_primary_language:
+  type: str
+  help: Primary documentation language
+  choices:
+    English (United States): en-US
+    Traditional Chinese (Taiwan): zh-TW
+  default: en-US
+
+readme_strategy:
+  type: str
+  help: How README translations are organised
+  choices:
+    Separate files (README.md plus README.<lang>.md): separate
+    Bilingual (one file, both languages side by side): bilingual
+    Primary language only, no translations: primary_only
+  default: separate
+
+commit_locales:
+  type: str
+  help: Locales whose i18n sources are committed (must include the primary)
+  multiselect: true
+  choices:
+    English (United States): en-US
+    Traditional Chinese (Taiwan): zh-TW
+  default: ["{{ readme_primary_language }}"]
+  validator: >-
+    {% if readme_primary_language not in commit_locales %}
+    Must include the primary language, {{ readme_primary_language }}
+    {% endif %}
+    {% if readme_strategy == 'bilingual' and commit_locales | length != 2 %}
+    The bilingual strategy needs exactly two locales
+    {% endif %}
+    {% if readme_strategy == 'primary_only' and commit_locales | length > 1 %}
+    The primary_only strategy takes one locale
+    {% endif %}
+
+release_phase:
+  type: str
+  help: Governance strength -- this moves forward only, see ADR 0009
+  choices:
+    alpha (admin may bypass required checks, each use leaves a trace): alpha
+    beta (required checks cannot be bypassed): beta
+    release (no bypass actors at all): release
+  default: alpha
+
+collaboration_mode:
+  type: str
+  help: Is there a second person who can review and approve? See ADR 0010
+  choices:
+    solo (one maintainer; required review would deadlock): solo
+    team (a second reviewer exists): team
+  default: solo
+
+project_visibility:
+  type: str
+  help: Repository visibility, declared rather than detected
+  choices:
+    Public: public
+    Private: private
+  default: public
+
+enable_pages:
+  type: bool
+  help: Publish the decision site to GitHub Pages
+  default: "{{ project_visibility == 'public' }}"
+
+enable_pr_template:
+  type: bool
+  help: Install the pull request template
+  default: true
+
+enable_terminology:
+  type: bool
+  help: Install the bilingual terminology tables
+  default: true
+
+terminology_domains:
+  type: str
+  help: Terminology domains to install
+  multiselect: true
+  when: "{{ enable_terminology }}"
+  choices:
+    Software: software
+    Academic: academic
+  default: [software]
+
+enable_academic_docs:
+  type: bool
+  help: Install the academic writing, citation and literature review guides
+  default: false
+
+citation_style:
+  type: str
+  help: Citation style
+  when: "{{ enable_academic_docs }}"
+  choices: [APA, MLA, Chicago, IEEE, Vancouver]
+  default: APA
+
+academic_field:
+  type: str
+  help: Academic field
+  when: "{{ enable_academic_docs }}"
+  choices:
+    Computer science: computer_science
+    Social science: social_science
+    Humanities: humanities
+    Natural science: natural_science
+    Medicine: medicine
+  default: computer_science
+
+# --- Derived from ownership.yml -- do not edit by hand -------------------
+# BEGIN ai-scheme:ownership-derived
+_exclude:
+  - .git
+  - .github/workflows/template-ci.yml
+  - copier.yml
+  - ownership.yml
+_skip_if_exists:
+  - CHANGELOG.md
+  - LICENSE
+  - docs/adr/
+  - docs/specs/
+  - src/
+  - tests/
+# END ai-scheme:ownership-derived
