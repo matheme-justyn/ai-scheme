@@ -1,7 +1,21 @@
-.DS_Store
-*.log
+# Secrets -- never commit these
 .env
-node_modules/
+.env.*
+!.env.example
+
+# Logs and OS noise
+*.log
+.DS_Store
+
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 .venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
