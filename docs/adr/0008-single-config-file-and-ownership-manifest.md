@@ -21,7 +21,10 @@
 - CLI 提供 `config get <key>` 與 `config validate`，shell 腳本不自行解析 YAML。CLI 以 uv 管理依賴，直接用 PyYAML，不重蹈手寫解析器。
 - **Ownership 是資料不是 Jinja**：以一份可讀的 manifest 宣告哪些路徑由 template 擁有，`uninstall`、`adopt` 報告、`update` 衝突判斷共用同一份清單。這取代 ADR 0005 的目錄名隔離。
 - **與 `ai-zpd` 的設定檔採兩檔兩格式，邊界寫明**：`ai-zpd` 保留根目錄 `config.toml`（機制層），本層用 `.scheme/config.yml`（骨架層）。兩者**不互相讀寫**，同名鍵各自獨立、不做 fallback。`status` 與 `adopt` 偵測到根目錄有 `config.toml` 時只回報「偵測到機制層設定檔」，不讀內容、不因此改變狀態判斷。
-- 骨架層擁有的鍵：`project_*`、`languages`、`branch_strategy`、`readme_primary_language`、`release_phase`、`collaboration_mode`、`project_visibility`、`enable_*`、template 版本。
+- 骨架層擁有的鍵：`languages`、`branch_strategy`、`readme_primary_language`、`release_phase`、`collaboration_mode`、`project_visibility`、`enable_*`、以及專案識別（名稱、slug、描述）。
+- 機制層（`ai-zpd` 的 `config.toml`）擁有的鍵，列此僅為邊界對照，本層不得讀取：`[project].type`、`[project].features`、`[project].quality`（決定載入哪些模組）、`[opencode]` 整棵、`[services]` 整棵、`[modules]` 整棵。
+- **命名約束**：兩層都不得使用會被誤認為對方的鍵名。具體地，本層**不使用 `project_type`** 這個字面——語言與技術棧一律以 `languages` 表達。理由：`ai-zpd` 的 `[project].type` 指的是「載入哪些領域模組」（fullstack／backend／cli／academic…），與本層的語言 profile 語意不同；在「不互讀、同名鍵各自獨立」的前提下，名字相近而行為不同是最糟的組合。
+- **template 版本**：概念上歸骨架層，唯一來源是 `.scheme/config.yml` 與 `ai-scheme status --json` 的 `current_version`／`target_version`。`ai-zpd` 既有的 `.scaffolding/VERSION` 與使用者專案根目錄的 `.template-version` 為**過渡期相容路徑**，本層僅在 `migrate` 狀態下唯讀，不寫入、不作為判斷依據（見 [#4](https://github.com/matheme-justyn/ai-scheme/issues/4)）。
 
 ## Alternatives considered
 
@@ -44,4 +47,5 @@
 - 正面：`update` 能逐檔判斷，不再是整包覆蓋或整包不動。
 - 正面：`uninstall`、`adopt` 報告、衝突判斷共用同一份清單，不會再各自手抄。
 - 負面：使用者的專案裡會同時出現 `.scheme/config.yml` 與 `config.toml` 兩個設定檔、兩種格式。這是明知的代價，靠檔頭註解與文件說明處理。
+- 負面：`.template-version` 這個約定散落在 `ai-zpd` 的 8 個檔案（雙語 README、AGENTS.md、`.opencode/INSTALL.md`、`smart-install.sh`、`test-init-project.sh`、PRD），過渡期不會短。
 - 負面：ADR 0005 的目錄隔離仍存在於既有的生成 repo，需要 `migrate` 路徑處理（見 [#4](https://github.com/matheme-justyn/ai-scheme/issues/4)、[#5](https://github.com/matheme-justyn/ai-scheme/issues/5)）。
