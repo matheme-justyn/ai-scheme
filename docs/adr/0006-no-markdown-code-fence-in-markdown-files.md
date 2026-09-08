@@ -1,9 +1,11 @@
-# ADR 0008: No Markdown Code Fence in Markdown Files
+# ADR 0006: No Markdown Code Fence in Markdown Files
 
 **Status**: Accepted  
 **Date**: 2026-03-10  
 **Deciders**: Template Maintainers  
 **Tags**: documentation, markdown, standards
+
+> **編號變更**：本文件原為 `0008-no-markdown-code-fence-in-markdown-files.md`，於 2026-09-08 依 [#2](https://github.com/matheme-justyn/ai-scheme/issues/2) 的編號政策重編為 0006。上游 `my-vibe-scaffolding` 另有一份不同內容的 0008（opencode-config），現歸 `ai-zpd`；重編正是為了消除這個同號不同文的狀況。對照表見 [README](./README.md)。
 
 ## Context
 
@@ -172,7 +174,7 @@ grep -r '```markdown' --include="*.md" . && echo "❌ Found violations" || echo 
 
 ## Related Decisions
 
-- ADR 0007: Agent Skills Ecosystem Integration - AI agent behavior standards
+- `my-vibe-scaffolding` ADR 0007: Agent Skills Ecosystem Integration —三 repo 拆分後未歸入本 repo，agent 行為規範屬 `ai-skill-web` 層。
 - AGENTS.md § README Generation Protocol - Automated markdown generation rules
 
 ## Notes

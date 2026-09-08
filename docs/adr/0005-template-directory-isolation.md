@@ -1,4 +1,13 @@
-# Template File Isolation Strategy
+# ADR 0005: Template File Isolation Strategy
+
+**Status**: Superseded by [ADR 0008](./0008-single-config-file-and-ownership-manifest.md)  
+**Date**: 2026-03-03  
+**Deciders**: Template Maintainers  
+**Tags**: template, directory-layout, update
+
+> **編號變更**：本文件原為 `0006-template-directory-isolation.md`，於 2026-09-08 依 [#2](https://github.com/matheme-justyn/ai-scheme/issues/2) 的編號政策重編為 0005。對照表見 [README](./README.md)。
+
+> **Superseded**：`.scaffolding/` 目錄名隔離的做法已由 ownership manifest（資料而非目錄慣例）取代，見 ADR 0008 與 [#3](https://github.com/matheme-justyn/ai-scheme/issues/3)。原文保留，理由仍有效，被取代的是實作手段而非問題判斷。
 
 ## Problem
 
@@ -325,7 +334,7 @@ $ grep -r "template/docs" AGENTS.md
 ## Related ADRs
 
 - **ADR 0001**: Established ADR system (foundation for this decision)
-- **ADR 0005**: OpenCode stability (similar isolation concept for `.opencode-data/`)
+- **`ai-zpd` ADR 0005**: OpenCode stability（相同的隔離概念用於 `.opencode-data/`）。三 repo 拆分後該文件歸 `ai-zpd`，不在本 repo。
 
 ---
 

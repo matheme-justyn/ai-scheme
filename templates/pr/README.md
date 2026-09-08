@@ -154,7 +154,7 @@ Template versions align with scaffolding versions:
 
 ## Related Documentation
 
-- [ADR 0012 - Module System & Conditional Loading](../../docs/adr/0012-module-system-and-conditional-loading.md)
+- `my-vibe-scaffolding` ADR 0012 - Module System & Conditional Loading（三 repo 拆分後未歸入本 repo，連結失效）
 - [AGENTS.md - PR Template Protocol](../../../AGENTS.md#pull-request)
 - [Internationalization Guide](../../i18n/README.md)
 
@@ -162,5 +162,5 @@ Template versions align with scaffolding versions:
 
 For issues or suggestions:
 1. Check `AGENTS.md` for AI agent guidance
-2. Review ADR 0012 for design decisions
+2. Review `my-vibe-scaffolding` ADR 0012 for design decisions (not carried into this repo)
 3. Consult `config.toml.example` for configuration options
