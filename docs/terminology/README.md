@@ -268,8 +268,8 @@ To add a new domain (e.g., `mobile/`):
 
 ## Related Documentation
 
-- **[AGENTS.md - Module Loading Protocol](../../../AGENTS.md#module-loading-protocol)** - Complete loading rules
-- **[config.toml.example](../../../config.toml.example)** - Configuration reference
+- **[AGENTS.md](../../AGENTS.md)** - Repository conventions
+- **[config-boundary.md](../config-boundary.md)** - Which config file owns which setting
 - **`my-vibe-scaffolding` ADR 0012 - Module System & Conditional Loading** - Design decisions（三 repo 拆分後未歸入本 repo，連結失效）
 
 ---

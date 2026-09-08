@@ -233,7 +233,7 @@ https://raw.githubusercontent.com/matheme-justyn/my-vibe-scaffolding/main/.openc
 詳細說明 | For details: [INSTALL.md](./.opencode/INSTALL.md)
 
 - [更新日誌](./CHANGELOG.md) - 版本變更記錄 | Version change log
-- [模板同步](./.scaffolding/docs/TEMPLATE_SYNC.md) - 更新到新版本 | Update to new versions
+- `ai-scheme update` - 更新到新版本 | Update to new versions
 
 ## AI Agent Implementation (Bilingual Strategy Only)
 
