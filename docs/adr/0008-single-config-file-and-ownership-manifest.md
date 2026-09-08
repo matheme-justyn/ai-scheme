@@ -5,7 +5,8 @@
 **Issue**: [#2](https://github.com/matheme-justyn/ai-scheme/issues/2), [#3](https://github.com/matheme-justyn/ai-scheme/issues/3)
 **PR**: [#28](https://github.com/matheme-justyn/ai-scheme/pull/28)
 **Tags**: config, copier, ownership, update
-**Supersedes**: [ADR 0005](./0005-template-directory-isolation.md)
+**Supersedes**: [ADR 0005](./0005-template-directory-isolation.md)  
+**Cross-repo**: 對應的決策記錄由 `ai-zpd` 側自行保存（`ai-zpd` ADR 0015，撰寫完成待 commit）。本 ADR 只約束本層行為，不代表另一側。
 
 ## Context
 
@@ -47,5 +48,5 @@
 - 正面：`update` 能逐檔判斷，不再是整包覆蓋或整包不動。
 - 正面：`uninstall`、`adopt` 報告、衝突判斷共用同一份清單，不會再各自手抄。
 - 負面：使用者的專案裡會同時出現 `.scheme/config.yml` 與 `config.toml` 兩個設定檔、兩種格式。這是明知的代價，靠檔頭註解與文件說明處理。
-- 負面：`.template-version` 這個約定散落在 `ai-zpd` 的 8 個檔案（雙語 README、AGENTS.md、`.opencode/INSTALL.md`、`smart-install.sh`、`test-init-project.sh`、PRD），過渡期不會短。
+- 負面：`.template-version` 這個約定散落在 `ai-zpd` 的 **15 個檔案**——雙語 README、`AGENTS.md`、`.gitignore`、`.opencode/INSTALL.md`、`.scaffolding/` 下兩份 README、PRD、`test-init-project.sh`，再加六支腳本（`init-project.sh`、`smart-install.sh`、`sync-template.sh`、`analyze-conflicts.sh`、`generate-readme.sh`、`migrate-to-template-dir.sh`）。這是一次遷移，不是順手改幾行，過渡期不會短。
 - 負面：ADR 0005 的目錄隔離仍存在於既有的生成 repo，需要 `migrate` 路徑處理（見 [#4](https://github.com/matheme-justyn/ai-scheme/issues/4)、[#5](https://github.com/matheme-justyn/ai-scheme/issues/5)）。
