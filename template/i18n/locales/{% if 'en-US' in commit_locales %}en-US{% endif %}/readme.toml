@@ -1,0 +1,83 @@
+# README.md translations for English (United States)
+# BCP 47 Language Tag: en-US
+
+[meta]
+language_tag = "en-US"
+language_name = "English (United States)"
+language_native = "English (US)"
+
+[header]
+title = "My Vibe Scaffolding"
+tagline = "AI-driven project scaffolding template"
+version_badge = "Version"
+license_badge = "License"
+
+[concept]
+title = "What is This?"
+description = "**AI-driven project scaffolding template** for quick project setup with best practices."
+theory_desc = "Based on psychologist Lev Vygotsky's scaffolding theory — provides structure when you need it, remove it when you don't."
+
+[core_features]
+title = "Core Features"
+ai_integration = "🤖 **AI Agent Integration** - `AGENTS.md` + Skills system for OpenCode/Cursor/Claude"
+version_mgmt = "📦 **Version Management** - Pre-push hooks enforce version updates"
+i18n = "🌐 **Multi-language** - BCP 47 i18n for documentation"
+smart_setup = "🛠️ **Smart Setup** - First-time setup handled automatically by AI agent"
+
+[installation]
+title = "Installation"
+ai_prompt_title = "**Unified AI Prompt (Works for All Scenarios):**"
+ai_prompt = "Apply scaffolding from https://github.com/matheme-justyn/my-vibe-scaffolding to current project"
+how_it_works = "**AI will automatically detect and handle:**"
+scenario_a_title = "### Scenario A: Existing Project"
+scenario_a = "If current directory has project files (`.git/`, `package.json`, etc.):
+1. Download `.scaffolding/` directory from GitHub
+2. Download `AGENTS.md`, `config.toml.example`
+3. Run `./.scaffolding/scripts/init-project.sh`
+4. Script detects no `.template-version` → **First-time mode**"
+scenario_b_title = "### Scenario B: New Project from Template"
+scenario_b = "If creating a brand new project:
+1. Click **\"Use this template\"** on GitHub
+2. Clone your new repository
+3. Run `./.scaffolding/scripts/init-project.sh`
+4. Script detects no `.template-version` → **First-time mode**"
+key_benefit = "**Key benefit**: One prompt for all scenarios — AI handles the rest"
+
+[unified_command]
+title = "How the Script Works"
+description = "The `init-project.sh` script intelligently detects your situation:"
+first_time_mode = "**First-time mode** (no `.template-version` file):
+- Asks for project information
+- Creates VERSION, README.md, LICENSE
+- Sets up Git hooks
+- Creates `.template-version` to track which template version you're using"
+update_mode = "**Update mode** (`.template-version` exists):
+- Compares current version with template version
+- Consolidates agent configs (`.claude`, `.roo` → `.agents`)
+- Reinstalls Git hooks (may have new features)
+- Updates `.template-version`"
+when_to_run = "**When to run manually:**
+- After cloning new project from template
+- When you want to update template features
+- When consolidating scattered agent configurations"
+
+[documentation]
+title = "Documentation"
+features = "📖 **[Full Features](./.scaffolding/docs/FEATURES.md)** - v2.0.0 technical details"
+agents = "🤖 **[AGENTS.md](./AGENTS.md)** - AI agent instructions and conventions"
+changelog = "📝 **[CHANGELOG.md](./.scaffolding/CHANGELOG.md)** - Version history"
+
+[tech_stack]
+title = "Tech Stack"
+description = "Why these technologies?"
+opencode = "**OpenCode** (Open-source AI) - 75+ models, CLI-first | Avoid vendor lock-in"
+agents_md = "**AGENTS.md Standard** - Cross-tool compatible | AI understands project conventions"
+skills = "**Skills System** - Reusable workflows | Encode best practices"
+bundles = "**Bundles & Workflows** - Role-based collections | Quick context loading"
+superpowers = "We use [superpowers](https://github.com/ohmyopencode/superpowers) - community-driven AI workflows."
+
+[footer]
+tagline = "Based on Vygotsky's Scaffolding Theory | Powered by AI | For Developers"
+links_docs = "Documentation"
+links_changelog = "Changelog"
+links_github = "GitHub"

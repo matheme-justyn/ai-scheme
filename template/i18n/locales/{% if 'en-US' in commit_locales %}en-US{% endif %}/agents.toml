@@ -1,0 +1,71 @@
+# AGENTS.md translations for English (United States)
+# BCP 47 Language Tag: en-US
+
+[meta]
+language_tag = "en-US"
+language_name = "English (United States)"
+language_native = "English (US)"
+
+[project]
+title = "Project Overview"
+description_todo = "<!-- TODO: Fill in project description, goals, and context -->"
+
+[tech_stack]
+title = "Tech Stack"
+list_todo = "<!-- TODO: List technologies, frameworks, and tools used in this project -->"
+
+[coding_conventions]
+title = "Coding Conventions"
+test_first = "**Always write tests first**: All new features and bug fixes must have tests written first"
+docstring_and_types = "**All functions must have docstrings and type annotations**: Ensures code readability and maintainability"
+avoid_overengineering = "**Avoid over-engineering**: Keep it simple, only implement what's currently needed"
+
+[commit_message]
+title = "Commit Message"
+description = "Write commit messages in Traditional Chinese, format:"
+format = "type: description"
+types_title = "**Allowed types:**"
+type_feat = "`feat`: New feature"
+type_fix = "`fix`: Bug fix"
+type_docs = "`docs`: Documentation update"
+type_refactor = "`refactor`: Refactoring (code improvement without changing functionality)"
+type_test = "`test`: Testing related"
+type_chore = "`chore`: Other maintenance work"
+examples_title = "**Examples:**"
+example_feat = "feat: add user login functionality"
+example_fix = "fix: resolve database connection error"
+example_docs = "docs: update API documentation"
+
+[pull_request]
+title = "Pull Request"
+title_format = "### PR Title Format (Angular Style)"
+title_language = "**Use English, format:**"
+title_structure = "type(scope): brief description"
+types_title = "**Allowed types:**"
+type_feat = "`feat`: New feature"
+type_fix = "`fix`: Bug fix"
+type_docs = "`docs`: Documentation"
+type_style = "`style`: Code style"
+type_refactor = "`refactor`: Refactoring"
+type_test = "`test`: Tests"
+type_chore = "`chore`: Maintenance"
+examples_title = "**Examples:**"
+example_feat = "feat(auth): add JWT authentication"
+example_fix = "fix(api): resolve memory leak in user service"
+example_docs = "docs(readme): update installation guide"
+example_refactor = "refactor(core): simplify error handling logic"
+content_title = "### PR Content Principles"
+content_concise = "**Be concise**: Write key points only, avoid lengthy explanations"
+content_bilingual = "**Bilingual**: Provide English and Chinese for important information"
+content_bullets = "**Use bullet points**: Keep each point brief and clear"
+content_required = "**Required info**: What (what was done), Why (reason), Testing (how to test)"
+
+[file_structure]
+title = "File Structure"
+description_todo = "<!-- TODO: Document the project's directory structure and organization -->"
+
+[what_not_to_do]
+title = "What NOT to do"
+no_architecture = "❌ **Don't change architecture without discussion**: Any architectural changes must be discussed first"
+no_refactor = "❌ **Don't refactor existing code unless requested**: Focus on the current task"
+no_dependencies = "❌ **Don't install dependencies without discussion**: Discuss necessity and alternatives before adding packages"

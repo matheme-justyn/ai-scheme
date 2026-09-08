@@ -16,8 +16,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from ai_scheme import __version__, config, ownership
-from ai_scheme.paths import OWNERSHIP_RELPATH, package_root, repo_root
+from ai_scheme import __version__, config, ownership, selfhost
+from ai_scheme.paths import (
+    OWNERSHIP_RELPATH,
+    UNINSTALL_RELPATH,
+    package_root,
+    repo_root,
+)
 
 EXIT_OK = 0
 EXIT_NO = 1
@@ -66,6 +71,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     own_sub.add_parser("list", help="Print each declared path and its kind.")
 
+    host = sub.add_parser(
+        "selfhost",
+        help="Render template/ over this repository's own tree (ADR 0014).",
+    )
+    host_sub = host.add_subparsers(dest="selfhost_command", required=True)
+    host_sub.add_parser("check", help="Exit 1 if the tree differs from the rendering.")
+    host_sub.add_parser("apply", help="Write the rendering into the working tree.")
+
     return parser
 
 
@@ -95,7 +108,7 @@ def cmd_config_validate(root: Path) -> int:
 def cmd_ownership_sync(root: Path, check: bool) -> int:
     manifest = ownership.load(root)
     copier_path = root / "copier.yml"
-    uninstall_path = root / "docs" / "uninstall.md"
+    uninstall_path = root / UNINSTALL_RELPATH
 
     if not copier_path.is_file():
         raise ownership.OwnershipError(f"copier.yml not found: {copier_path}")
@@ -111,7 +124,7 @@ def cmd_ownership_sync(root: Path, check: bool) -> int:
     if wanted_copier != current_copier:
         stale.append("copier.yml")
     if wanted_uninstall != current_uninstall:
-        stale.append("docs/uninstall.md")
+        stale.append(UNINSTALL_RELPATH.as_posix())
 
     if check:
         if stale:
@@ -135,6 +148,25 @@ def cmd_ownership_sync(root: Path, check: bool) -> int:
     return EXIT_OK
 
 
+def cmd_selfhost(root: Path, apply_changes: bool) -> int:
+    with selfhost.render_to_temp(root) as rendered:
+        rendered_root = Path(rendered) / "rendered"
+        if apply_changes:
+            written = selfhost.apply(root, rendered_root)
+            print(f"rendered {len(written)} path(s) from template/")
+            return EXIT_OK
+        differences = selfhost.compare(root, rendered_root)
+
+    if not differences:
+        print("the working tree matches template/")
+        return EXIT_OK
+    print(f"{len(differences)} path(s) differ from template/:", file=sys.stderr)
+    for difference in differences:
+        print(f"  {difference}", file=sys.stderr)
+    print("run `ai-scheme selfhost apply`", file=sys.stderr)
+    return EXIT_NO
+
+
 def cmd_ownership_list(root: Path) -> int:
     manifest = ownership.load(root)
     width = max(len(entry.path) for entry in manifest.entries)
@@ -156,7 +188,9 @@ def main(argv: list[str] | None = None) -> int:
             if args.ownership_command == "sync":
                 return cmd_ownership_sync(root, args.check)
             return cmd_ownership_list(root)
-    except (config.ConfigError, ownership.OwnershipError) as exc:
+        if args.command == "selfhost":
+            return cmd_selfhost(root, apply_changes=args.selfhost_command == "apply")
+    except (config.ConfigError, ownership.OwnershipError, selfhost.SelfHostError) as exc:
         print(f"ai-scheme: {exc}", file=sys.stderr)
         return EXIT_UNDETERMINED
 

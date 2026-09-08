@@ -1,0 +1,8 @@
+{
+  "$schema": "https://code.visualstudio.com/schemas/vscode-settings",
+  "// Description": "OpenCode 專案獨立資料庫配置 - 解決多專案衝突問題",
+  "// Documentation": "https://github.com/matheme-justyn/my-vibe-scaffolding/blob/main/.template/docs/adr/0005-single-instance-opencode-workflow.md",
+  
+  "opencode.dataDir": "${workspaceFolder}/.opencode-data",
+  "opencode.logLevel": "info"
+}

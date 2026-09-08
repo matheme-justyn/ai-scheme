@@ -72,8 +72,9 @@ paths:
     kind: template
   - path: i18n/
     kind: template
-  - path: .vscode/settings.json
+  - path: .vscode/
     kind: template
+    note: Editor settings the skeleton keeps in step, plus their explanation.
 
   # --- Documentation the template maintains ------------------------------
   - path: docs/guides/
@@ -81,9 +82,15 @@ paths:
     note: Style, git workflow, documentation and writing guides.
   - path: docs/terminology/
     kind: template
+  - path: docs/templates/
+    kind: template
+    note: Document templates a project fills in, such as the PRD skeleton.
   - path: docs/uninstall.md
     kind: generated
     source: ownership.yml
+  - path: docs/collaboration-modes.md
+    kind: template
+    note: What solo and team mode change, crossed with release_phase.
   - path: docs/config-boundary.md
     kind: template
     note: >-

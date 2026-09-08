@@ -89,7 +89,7 @@ def test_ownership_sync_check_fails_when_generated_files_drift(project: Path, ca
 
 def test_ownership_sync_writes_and_then_is_clean(project: Path) -> None:
     assert run("-C", str(project), "ownership", "sync") == EXIT_OK
-    assert (project / "docs" / "uninstall.md").is_file()
+    assert (project / "template" / "docs" / "uninstall.md").is_file()
     assert run("-C", str(project), "ownership", "sync", "--check") == EXIT_OK
 
 

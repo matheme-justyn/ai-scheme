@@ -1,0 +1,27 @@
+# Answers for this repository's own use of the skeleton it ships.
+#
+# ai-scheme applies itself: the tracked files under the paths the template owns
+# are the rendered output of `template/`, not hand-maintained copies. See ADR
+# 0014, and run `ai-scheme selfhost check` after changing either side.
+_src_path: .
+
+project_name: ai-scheme
+project_slug: ai-scheme
+project_description: Repository skeleton and CI conventions, applied and kept in sync across generated projects
+languages:
+  - python
+branch_strategy: main
+readme_primary_language: en-US
+readme_strategy: separate
+commit_locales:
+  - en-US
+  - zh-TW
+release_phase: alpha
+collaboration_mode: solo
+project_visibility: public
+enable_pages: true
+enable_pr_template: true
+enable_terminology: true
+terminology_domains:
+  - software
+enable_academic_docs: false
