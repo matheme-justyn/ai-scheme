@@ -58,8 +58,8 @@ echo ".opencode-data/" >> .gitignore
 
 ## 📖 Documentation
 
-- [ADR 0005 - OpenCode Workflow](./../docs/adr/0005-single-instance-opencode-workflow.md)
-- [OpenCode Setup Guide](./../docs/OPENCODE_SETUP_GUIDE.md)
+- `ai-zpd` ADR 0005 - OpenCode Workflow（三 repo 拆分後歸 `ai-zpd`，不在本 repo）
+- `ai-zpd` OpenCode Setup Guide（同上，不在本 repo）
 
 ## ⚠️ Important Notes
 

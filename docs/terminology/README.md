@@ -270,7 +270,7 @@ To add a new domain (e.g., `mobile/`):
 
 - **[AGENTS.md - Module Loading Protocol](../../../AGENTS.md#module-loading-protocol)** - Complete loading rules
 - **[config.toml.example](../../../config.toml.example)** - Configuration reference
-- **[ADR 0012 - Module System](../../../docs/adr/0012-module-system-and-conditional-loading.md)** - Design decisions
+- **`my-vibe-scaffolding` ADR 0012 - Module System & Conditional Loading** - Design decisions（三 repo 拆分後未歸入本 repo，連結失效）
 
 ---
 
