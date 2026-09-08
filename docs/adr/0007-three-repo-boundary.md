@@ -18,7 +18,7 @@
 - `ai-zpd`（機制層）提供：安裝與執行機制、統一 prompt。
 - `ai-skill-web`（能力層）提供：agent 角色、技能、SDD 內容，以路徑契約掛入生成的 repo。
 - **依賴方向單向**：`ai-zpd` 呼叫 `ai-scheme` 的 CLI；`ai-scheme` 不知道 `ai-zpd` 的存在，不讀它的檔案、不依賴它的安裝結果。
-- **唯一介面是 `ai-scheme status --json`**。`ai-zpd` 的統一 prompt 讀 `state` 與 `next_command` 行動，不自行推斷 repo 狀態、不自行比對版本（見 [#4](https://github.com/matheme-justyn/ai-scheme/issues/4)）。介面契約寫在 `docs/agent-install.md`。
+- **唯一介面是 `ai-scheme status --json`**。`ai-zpd` 的統一 prompt 讀 `state` 與 `next_command` 行動，不自行推斷 repo 狀態、不自行比對版本（見 [#4](https://github.com/matheme-justyn/ai-scheme/issues/4)）。介面契約寫在 `docs/status-interface-contract.md`。**命名約束**：本層的契約文件名不使用 `install` 字樣——`ai-zpd` 已有 `.opencode/INSTALL.md`，講的是「能力如何被裝進使用者專案」，與本文件的「agent 如何呼叫骨架層的生命週期介面」不是同一件事，同名會重演 `project_type` 那類撞名。本文件明寫一句不涵蓋 `ai-zpd` 的 install/update 機制。
 - 跨 repo 引用 ADR 一律寫成 `<repo> ADR <n>`。
 
 ## Alternatives considered
