@@ -566,7 +566,7 @@ class AuthService {
 - 🤝 Contributing guidelines (if open-source)
 - 📄 License information
 
-See [README_STRUCTURE module](./.scaffolding/docs/README_STRUCTURE.md) (when available).
+See [README_STRUCTURE](./README_STRUCTURE.md).
 
 ---
 
