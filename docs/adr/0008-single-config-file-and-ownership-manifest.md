@@ -3,7 +3,7 @@
 **Status**: Accepted
 **Date**: 2026-09-08
 **Issue**: [#2](https://github.com/matheme-justyn/ai-scheme/issues/2), [#3](https://github.com/matheme-justyn/ai-scheme/issues/3)
-**PR**: PR_PLACEHOLDER
+**PR**: [#28](https://github.com/matheme-justyn/ai-scheme/pull/28)
 **Tags**: config, copier, ownership, update
 **Supersedes**: [ADR 0005](./0005-template-directory-isolation.md)
 

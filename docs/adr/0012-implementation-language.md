@@ -3,7 +3,7 @@
 **Status**: Accepted
 **Date**: 2026-09-08
 **Issue**: [#1](https://github.com/matheme-justyn/ai-scheme/issues/1), [#2](https://github.com/matheme-justyn/ai-scheme/issues/2)
-**PR**: PR_PLACEHOLDER
+**PR**: [#28](https://github.com/matheme-justyn/ai-scheme/pull/28)
 **Tags**: language, tooling, copier, uv
 
 ## Context

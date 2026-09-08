@@ -3,7 +3,7 @@
 **Status**: Accepted
 **Date**: 2026-09-08
 **Issue**: [#2](https://github.com/matheme-justyn/ai-scheme/issues/2), [#13](https://github.com/matheme-justyn/ai-scheme/issues/13), [#21](https://github.com/matheme-justyn/ai-scheme/issues/21)
-**PR**: PR_PLACEHOLDER
+**PR**: [#28](https://github.com/matheme-justyn/ai-scheme/pull/28)
 **Tags**: governance, ruleset, release-phase
 
 ## Context

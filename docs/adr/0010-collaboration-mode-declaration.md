@@ -3,7 +3,7 @@
 **Status**: Accepted
 **Date**: 2026-09-08
 **Issue**: [#2](https://github.com/matheme-justyn/ai-scheme/issues/2), [#24](https://github.com/matheme-justyn/ai-scheme/issues/24)
-**PR**: PR_PLACEHOLDER
+**PR**: [#28](https://github.com/matheme-justyn/ai-scheme/pull/28)
 **Tags**: governance, collaboration-mode, ruleset
 
 ## Context
