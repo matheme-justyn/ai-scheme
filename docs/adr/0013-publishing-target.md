@@ -3,7 +3,7 @@
 **Status**: Accepted
 **Date**: 2026-09-08
 **Issue**: [#2](https://github.com/matheme-justyn/ai-scheme/issues/2), [#23](https://github.com/matheme-justyn/ai-scheme/issues/23), [#26](https://github.com/matheme-justyn/ai-scheme/issues/26)
-**PR**: PR_PLACEHOLDER
+**PR**: [#28](https://github.com/matheme-justyn/ai-scheme/pull/28)
 **Tags**: publishing, github-pages, scope
 
 ## Context
