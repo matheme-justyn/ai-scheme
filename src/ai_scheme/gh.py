@@ -86,6 +86,24 @@ class Client:
                 return True
         return False
 
+    def pull_request(self, repo: str, number: int) -> dict[str, Any]:
+        """The fields the policy needs, in gh's own JSON shape."""
+        output = self._run(
+            [
+                "pr",
+                "view",
+                str(number),
+                "--repo",
+                repo,
+                "--json",
+                "number,title,body,isDraft,headRefName,labels,milestone,reviewRequests,author",
+            ]
+        )
+        try:
+            return json.loads(output)
+        except json.JSONDecodeError as exc:
+            raise GhError(f"gh returned output that is not JSON: {exc}") from exc
+
     def open_milestones(self, repo: str) -> list[dict[str, Any]]:
         return self.api(f"repos/{repo}/milestones?state=open") or []
 

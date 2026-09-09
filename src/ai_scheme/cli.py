@@ -17,7 +17,16 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from ai_scheme import __version__, config, gh, issues, milestones, ownership, selfhost
+from ai_scheme import (
+    __version__,
+    config,
+    gh,
+    issues,
+    milestones,
+    ownership,
+    pullrequests,
+    selfhost,
+)
 from ai_scheme import verify as verify_module
 from ai_scheme.paths import (
     OWNERSHIP_RELPATH,
@@ -87,6 +96,12 @@ def build_parser() -> argparse.ArgumentParser:
     issue_title = issue_sub.add_parser("validate-title", help="Check one title against the rules.")
     issue_title.add_argument("title", help="The title, quoted.")
     issue_sub.add_parser("check-forms", help="Check the issue forms against the contract.")
+
+    pull = sub.add_parser("pr", help="The pull request contract (#8).")
+    pull.add_argument("--repo", default=None, metavar="OWNER/NAME", help="Defaults to this one.")
+    pull_sub = pull.add_subparsers(dest="pr_command", required=True)
+    pull_check = pull_sub.add_parser("validate", help="Check one pull request against the policy.")
+    pull_check.add_argument("number", type=int)
 
     stone = sub.add_parser("milestone", help="The milestone contract (#9).")
     stone.add_argument("--repo", default=None, metavar="OWNER/NAME", help="Defaults to this one.")
@@ -313,6 +328,35 @@ def cmd_milestone_reconcile(client: gh.Client, repo: str, number: int) -> int:
     return EXIT_OK
 
 
+def cmd_pr_validate(client: gh.Client, repo: str, root: Path, number: int) -> int:
+    pull = client.pull_request(repo, number)
+    closed = pullrequests.closes(pull.get("body", ""))
+    issue = None
+    if closed:
+        try:
+            issue = client.issue(repo, closed[0])
+        except gh.GhError:
+            issue = None
+
+    try:
+        mode = config.get(config.load_answers(root), "collaboration_mode")
+    except config.ConfigError:
+        # A repository without an answers file is not a reason to skip the
+        # check; solo is the weaker of the two, so it cannot pass something
+        # team mode would fail.
+        mode = "solo"
+
+    problems = pullrequests.validate(pull, issue, collaboration_mode=str(mode))
+    state = "draft" if pull.get("isDraft") else "ready"
+    if not problems:
+        print(f"pull request #{number} ({state}): ok")
+        return EXIT_OK
+    print(f"pull request #{number} ({state}): {len(problems)} problem(s)", file=sys.stderr)
+    for problem in problems:
+        print(f"  {problem}", file=sys.stderr)
+    return EXIT_NO
+
+
 def cmd_verify(root: Path, tier_name: str | None, stage: str | None, base: str) -> int:
     if tier_name is not None:
         tier = Tier(tier_name)
@@ -355,6 +399,9 @@ def main(argv: list[str] | None = None) -> int:
             if args.issue_command == "validate-title":
                 return cmd_issue_validate_title(args.title)
             return cmd_issue_check_forms(root)
+        if args.command == "pr":
+            client = gh.Client()
+            return cmd_pr_validate(client, args.repo or client.current_repo(), root, args.number)
         if args.command == "milestone":
             client = gh.Client()
             repo = args.repo or client.current_repo()

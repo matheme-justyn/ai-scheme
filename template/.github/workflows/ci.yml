@@ -45,3 +45,11 @@ jobs:
 
       - name: Verify
         run: scripts/verify --tier "${{ steps.tier.outputs.tier }}"
+
+      - name: Check the pull request against the policy
+        # A draft is checked for its title and branch name only; the full
+        # policy applies once it is marked ready.
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/validate-pr-policy "${{ github.event.pull_request.number }}"
