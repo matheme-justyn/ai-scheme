@@ -25,6 +25,7 @@ The template put these here and nothing else did. Removing them removes the skel
 | `docs/collaboration-modes.md` | template | What solo and team mode change, crossed with release_phase. |
 | `docs/config-boundary.md` | template | Why a project sees both .scheme/config.yml and config.toml, and which layer owns which keys. |
 | `docs/guides/` | template | Style, git workflow, documentation and writing guides. |
+| `docs/lease-carrier.md` | template | The pull request lease contract the mechanism layer's protocol is written against: namespace, fields, atomicity, expiry, exit codes. |
 | `docs/milestone-description.md` | template | When a milestone is worth creating, and what its description says. |
 | `docs/status-interface-contract.md` | template | Defines how an agent calls this layer's lifecycle interface. Deliberately not named "install" -- see ADR 0007. |
 | `docs/templates/` | template | Document templates a project fills in, such as the PRD skeleton. |
