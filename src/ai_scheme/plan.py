@@ -247,6 +247,13 @@ def classify(
             entries.append(Entry(relative, Action.ADD, kind, "not in the target yet"))
             continue
 
+        if relative in selfhost.UNCOMPARED:
+            # The answers file is Copier's bookkeeping, rewritten from the
+            # answers this plan already records. Merging it would mean merging
+            # a derived file against itself.
+            entries.append(Entry(relative, Action.OVERWRITE, kind, "Copier rewrites this file"))
+            continue
+
         if kind == "project":
             entries.append(Entry(relative, Action.PRESERVE, kind, "the project owns this path"))
             continue

@@ -161,7 +161,10 @@ def stage_python(root: Path) -> StageResult:
     for command in (
         ["uv", "run", "ruff", "check", "."],
         ["uv", "run", "ruff", "format", "--check", "."],
-        ["uv", "run", "pytest", "-q"],
+        # The fixtures that render the real template are the full tier's job,
+        # in the template stage. This one stays quick enough to run on every
+        # commit.
+        ["uv", "run", "pytest", "-q", "-m", "not slow"],
     ):
         code, output = _run(command, root)
         if code != 0:
@@ -191,6 +194,10 @@ def stage_template(root: Path) -> StageResult:
     if findings:
         findings.append("run `ai-scheme ownership sync`")
 
+    code, output = _run(["uv", "run", "pytest", "-q", "-m", "slow"], root)
+    if code != 0:
+        findings.append(f"generated-project fixtures failed\n{output}")
+
     with selfhost.render_to_temp(root) as handle:
         differences = selfhost.compare(root, Path(handle) / "rendered")
     if differences:
@@ -199,7 +206,9 @@ def stage_template(root: Path) -> StageResult:
 
     if findings:
         return StageResult(False, "the tree and the template disagree", tuple(findings))
-    return StageResult(True, "generated files and the rendered tree are current")
+    return StageResult(
+        True, "generated files, the rendered tree and the generated-project fixtures are current"
+    )
 
 
 def stage_issues(root: Path) -> StageResult:

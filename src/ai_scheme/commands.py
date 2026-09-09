@@ -14,6 +14,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+import yaml
+
 from ai_scheme import __version__, config, gh, issues, milestones, ownership, pullrequests, selfhost
 from ai_scheme import apply as apply_module
 from ai_scheme import plan as plan_module
@@ -214,7 +216,12 @@ def _answers_for(root: Path, mode: plan_module.Mode, data: list[str]) -> dict[st
         key, separator, value = item.partition("=")
         if not separator:
             raise config.ConfigError(f"--data expects KEY=VALUE, got {item!r}")
-        answers[key] = value
+        # Values are read as YAML so that list and boolean answers can be given
+        # on a command line at all: `languages=[python]`, `enable_pages=false`.
+        try:
+            answers[key] = yaml.safe_load(value) if value.strip() else value
+        except yaml.YAMLError:
+            answers[key] = value
     return answers
 
 
@@ -258,6 +265,10 @@ def cmd_lifecycle(root: Path, mode: plan_module.Mode, args: Any) -> int:
         selfhost.render_into(source, answers, rendered, ref=args.ref)
         previous = None
         if mode is plan_module.Mode.UPDATE and answers.get("_commit"):
+            # Rendering the recorded commit is what separates "changed locally"
+            # from "changed upstream". When the ref cannot be checked out --
+            # a dirty-copy pseudo-commit, a template that moved -- the plan
+            # falls back to calling every difference a manual merge.
             previous_root = Path(temporary) / "previous"
             try:
                 selfhost.render_into(source, answers, previous_root, ref=answers["_commit"])
@@ -271,7 +282,10 @@ def cmd_lifecycle(root: Path, mode: plan_module.Mode, args: Any) -> int:
             mode,
             root,
             source=source,
-            source_ref=args.ref or answers.get("_commit"),
+            # What the candidate was rendered from, not where the project came
+            # from: apply re-renders with this, and a `_commit` recorded from a
+            # dirty working copy is not a ref anything can check out.
+            source_ref=args.ref,
             answers={key: value for key, value in answers.items() if not key.startswith("_")},
             rendered_root=rendered,
             manifest=manifest,
