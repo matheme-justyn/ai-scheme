@@ -30,6 +30,10 @@ packages = ["src/ai_scheme"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+# Recent ruff versions format Python inside markdown fences. The guides show
+# deliberately wrong code next to the corrected version, so formatting them
+# would rewrite the lesson.
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]

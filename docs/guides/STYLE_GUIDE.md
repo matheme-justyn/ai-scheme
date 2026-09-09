@@ -825,7 +825,7 @@ Before committing code, verify:
 
 ## Related Documentation
 
-- **[TERMINOLOGY](./terminology/)** - Multilingual tech terms
+- **[TERMINOLOGY](../terminology/)** - Multilingual tech terms
 - **[GIT_WORKFLOW](./GIT_WORKFLOW.md)** - Git conventions and commit messages
 - **[FRONTEND_PATTERNS](./FRONTEND_PATTERNS.md)** - React/Next.js patterns (when available)
 - **[BACKEND_PATTERNS](./BACKEND_PATTERNS.md)** - Node.js/Express patterns (when available)

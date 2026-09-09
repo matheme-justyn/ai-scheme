@@ -39,7 +39,6 @@ template_repo_only:
   - copier.yml
   - ownership.yml
   - .git
-  - .github/workflows/template-ci.yml
 
 paths:
   # --- Template infrastructure -------------------------------------------
@@ -70,6 +69,7 @@ paths:
     kind: template
   - path: policies/
     kind: template
+    note: Declared policy the checks read -- link exceptions, and more to come.
   - path: i18n/
     kind: template
   - path: .vscode/

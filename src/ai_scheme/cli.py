@@ -17,12 +17,14 @@ import sys
 from pathlib import Path
 
 from ai_scheme import __version__, config, ownership, selfhost
+from ai_scheme import verify as verify_module
 from ai_scheme.paths import (
     OWNERSHIP_RELPATH,
     UNINSTALL_RELPATH,
     package_root,
     repo_root,
 )
+from ai_scheme.tiers import Tier, changed_paths, classify
 
 EXIT_OK = 0
 EXIT_NO = 1
@@ -78,6 +80,25 @@ def build_parser() -> argparse.ArgumentParser:
     host_sub = host.add_subparsers(dest="selfhost_command", required=True)
     host_sub.add_parser("check", help="Exit 1 if the tree differs from the rendering.")
     host_sub.add_parser("apply", help="Write the rendering into the working tree.")
+
+    check = sub.add_parser("verify", help="Run the checks for a change (#11).")
+    check.add_argument(
+        "--tier",
+        choices=[tier.value for tier in Tier],
+        default=None,
+        help="Force a tier instead of deriving it from the changed paths.",
+    )
+    check.add_argument(
+        "--stage",
+        choices=[stage.name for stage in verify_module.STAGES],
+        default=None,
+        help="Run one stage only.",
+    )
+    check.add_argument(
+        "--base",
+        default="origin/main",
+        help="Ref to compare against when deriving the tier.",
+    )
 
     return parser
 
@@ -167,6 +188,23 @@ def cmd_selfhost(root: Path, apply_changes: bool) -> int:
     return EXIT_NO
 
 
+def cmd_verify(root: Path, tier_name: str | None, stage: str | None, base: str) -> int:
+    if tier_name is not None:
+        tier = Tier(tier_name)
+    elif stage is not None:
+        # An explicit stage says what to run; the tier only has to be wide
+        # enough to contain it.
+        tier = Tier.FULL
+    else:
+        tier = classify(changed_paths(base, cwd=str(root)))
+
+    report = verify_module.run(root, tier, only=stage)
+    stream = sys.stdout if report.ok else sys.stderr
+    for line in report.lines():
+        print(line, file=stream)
+    return EXIT_OK if report.ok else EXIT_NO
+
+
 def cmd_ownership_list(root: Path) -> int:
     manifest = ownership.load(root)
     width = max(len(entry.path) for entry in manifest.entries)
@@ -188,6 +226,8 @@ def main(argv: list[str] | None = None) -> int:
             if args.ownership_command == "sync":
                 return cmd_ownership_sync(root, args.check)
             return cmd_ownership_list(root)
+        if args.command == "verify":
+            return cmd_verify(root, args.tier, args.stage, args.base)
         if args.command == "selfhost":
             return cmd_selfhost(root, apply_changes=args.selfhost_command == "apply")
     except (config.ConfigError, ownership.OwnershipError, selfhost.SelfHostError) as exc:

@@ -29,7 +29,7 @@ The template put these here and nothing else did. Removing them removes the skel
 | `hooks/` | template |  |
 | `i18n/` | template |  |
 | `ownership.yml` | template | This file. |
-| `policies/` | template |  |
+| `policies/` | template | Declared policy the checks read -- link exceptions, and more to come. |
 | `schemas/` | template |  |
 | `scripts/` | template | Lifecycle and verification entry points. |
 
