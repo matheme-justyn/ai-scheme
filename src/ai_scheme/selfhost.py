@@ -120,6 +120,33 @@ def replace_block(text: str, rendered: str, block: str) -> str:
     return text.replace(current, wanted)
 
 
+def render_into(
+    source: str, answers: dict[str, Any], destination: Path, *, ref: str | None = None
+) -> None:
+    """Render `source` with explicit answers into a directory of your choosing.
+
+    Used by the lifecycle plans, which render a candidate somewhere outside the
+    target so that producing a plan cannot dirty what it describes.
+    """
+    try:
+        from copier import run_copy
+        from copier._vcs import DirtyLocalWarning
+    except ImportError as exc:  # pragma: no cover - copier is a hard dependency
+        raise SelfHostError(f"copier is not installed: {exc}") from exc
+
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", category=DirtyLocalWarning)
+        run_copy(
+            source,
+            str(destination),
+            data={key: value for key, value in answers.items() if not key.startswith("_")},
+            defaults=True,
+            overwrite=True,
+            quiet=True,
+            vcs_ref=ref,
+        )
+
+
 def _rendered_files(rendered_root: Path) -> Iterator[Path]:
     for path in sorted(rendered_root.rglob("*")):
         if path.is_file():
