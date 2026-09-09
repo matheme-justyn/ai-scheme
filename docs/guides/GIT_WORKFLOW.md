@@ -1,5 +1,32 @@
 # Git Workflow (Git 工作流程)
 
+## 分支與 Issue 的關係 | Branches and issues
+
+`main` 是唯一的永久分支。工作分支從 Issue 開出來，用原生的 Development 連結：
+
+    gh issue develop <issue> --name <type>/<issue>-slug
+
+`<type>` 是 `feat`、`fix`、`docs`、`refactor`、`test`、`chore` 其中之一，與 commit
+與 PR 標題用同一組字。`branch_strategy = delivery` 的專案，一個 milestone 用一條
+短命的 `dev/m<N>-slug` 收斂，結束就刪；其餘情況直接進 `main`。
+
+## Pull request 契約 | The pull request contract
+
+一份 PR 說清楚三件事：關掉哪張 Issue（`Closes #N`）、完成清單、補充。
+
+- 清單沒勾完就維持 draft。draft 只驗標題與分支名；標成 ready 等於宣告「現在該
+  過了」，此時才做完整檢查。這條規則來自先前 POC 的教訓：一張 PR 反覆推了幾十次，
+  每推一次就重跑一輪 gate。
+- `scripts/validate-pr-policy <pr>` 在本機與 CI 跑同一套規則：closing keyword 對應
+  的 Issue 存在、雙方 checklist 全勾、label 與 milestone 一致、分支名格式、標題符合
+  conventional 格式（`!` 表示 breaking）。
+- `collaboration_mode = team` 另外要求有非作者的 review request；`solo` 不要求。
+
+## 版本 | Versions
+
+推送前不需要（也不應該）手動 bump 版本。版本由 release 流程依 PR 標題的 SemVer
+意圖決定。`hooks/pre-push` 現在跑的是 `scripts/verify`，不是版本檢查。
+
 **Version**: 2.0.0  
 **Module**: GIT_WORKFLOW  
 **Loading**: Always (Core module)  
@@ -49,15 +76,11 @@ git commit -m "add auth, fix bugs, update docs"
 - ✅ Version bumped before push
 - ❌ Never force push to `main`
 
-### 3. Version Bump on Every Push
+### 3. Version Comes From the Release, Not From You
 
-**This template enforces version bumps via pre-push hook.**
-
-**Why**: Direct main branch workflow (no dev branch) means every push is a "release". Without version bumps, `v1.2.0` before and after your change are different → confusion.
-
-**Enforcement**: Pre-push git hook blocks pushes without version change.
-
----
+A push does not need a version bump. The release flow reads the SemVer intent
+from the pull request title and produces the version, so there is one place
+that decides and no hook blocking a push for the wrong reason.
 
 ## Commit Message Format
 
@@ -339,12 +362,12 @@ refactor(core): simplify error handling logic
 
 ### PR Description Template
 
-**Use `.scaffolding/templates/pr/PULL_REQUEST_TEMPLATE.{lang}.md`**
+**Use `.github/pull_request_template.md`** -- GitHub fills it in for you.
 
 **Sections**:
-1. **Summary** (What changed)
-2. **Motivation** (Why changed)
-3. **Changes** (Detailed list)
+1. `Closes #N`
+2. 完成清單 / Checklist
+3. 補充 / Notes
 4. **Testing** (How tested)
 5. **Screenshots** (If UI change)
 6. **Breaking Changes** (If any)
@@ -425,48 +448,24 @@ Replace session-based auth to support API-only clients
 | Add new optional parameter | 1.5.0 | 1.6.0 | MINOR (backward-compatible) |
 | Remove deprecated function | 1.5.0 | 2.0.0 | MAJOR (breaking change) |
 
-### Version Bump Script
+### Producing a Version
 
-**Command**: `./.scaffolding/scripts/bump-version.sh <patch|minor|major>`
-
-**What it does**:
-1. Updates `.scaffolding/VERSION` and `VERSION`
-2. Updates CHANGELOG.md
-3. Updates README.md version badge
-4. Creates git commit
-5. Creates git tag
-
-**Usage**:
-```bash
-# Bug fix
-./.scaffolding/scripts/bump-version.sh patch
-
-# New feature
-./.scaffolding/scripts/bump-version.sh minor
-
-# Breaking change
-./.scaffolding/scripts/bump-version.sh major
-```
+Versions are produced by the release flow from the pull request title:
+`feat:` moves the minor, `fix:` the patch, a `!` marks a breaking change. There
+is no `bump-version` script to run and no VERSION file to keep in step by hand.
 
 ### Pre-Push Hook
 
-**Location**: `.git/hooks/pre-push`
+`hooks/pre-push` runs `scripts/verify` at the tier your change needs. Install
+it with:
 
-**Purpose**: Enforce version bump before pushing to `main`.
-
-**Behavior**:
 ```bash
-# If pushing to main...
-# And VERSION hasn't changed since last tag...
-# Block the push with error message
+git config core.hooksPath hooks
 ```
 
-**Install**:
-```bash
-./.scaffolding/scripts/install-hooks.sh
-```
-
----
+It used to block pushes to `main` whose VERSION had not changed. That rule is
+gone: it fired on changes that had no business bumping anything, and a hook
+that is wrong often enough gets bypassed and then ignored.
 
 ## Git Hooks
 
@@ -474,8 +473,8 @@ Replace session-based auth to support API-only clients
 
 | Hook | Purpose | Installed By |
 |------|---------|--------------|
-| **pre-commit** | Run linters, formatters | `.scaffolding/scripts/install-hooks.sh` |
-| **pre-push** | Enforce version bump | `.scaffolding/scripts/install-hooks.sh` |
+| **pre-commit** | Run linters, formatters | `git config core.hooksPath hooks` |
+| **pre-push** | Run `scripts/verify` at the tier the change needs | `git config core.hooksPath hooks` |
 | **commit-msg** | Validate commit message format | (Optional) |
 
 ### Pre-Commit Hook
@@ -495,22 +494,15 @@ npm run type-check || exit 1
 
 ### Pre-Push Hook
 
-**Enforces**: Version bump on `main` pushes.
+**Runs**: `scripts/verify`, which picks docs, fast or full from what changed.
 
-**Example** (`.git/hooks/pre-push`):
+**Shipped as** `hooks/pre-push`:
 ```bash
-#!/bin/bash
-# Check if pushing to main
-if [ "$(git branch --show-current)" = "main" ]; then
-  # Get last tag
-  LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null)
-  CURRENT_VERSION=$(cat VERSION)
-  
-  if [ "$LAST_TAG" = "v$CURRENT_VERSION" ]; then
-    echo "❌ VERSION unchanged. Run bump-version.sh first."
-    exit 1
-  fi
-fi
+#!/usr/bin/env bash
+set -euo pipefail
+repo_root="$(git rev-parse --show-toplevel)"
+[ -x "${repo_root}/scripts/verify" ] || exit 0
+"${repo_root}/scripts/verify"
 ```
 
 ### Commit Message Hook (Optional)
@@ -609,11 +601,8 @@ git tag -a v1.2.0 -m "Release v1.2.0: Add user authentication"
 git push origin v1.2.0
 ```
 
-**Automated** (via bump-version.sh):
-```bash
-./.scaffolding/scripts/bump-version.sh minor
-# Creates tag automatically
-```
+**Automated**: the release flow tags from the pull request's SemVer intent.
+Nothing to run by hand.
 
 ### Tag Annotations
 
@@ -840,15 +829,14 @@ gh pr create --title "feat(scope): description"
 # 1. Ensure tests pass
 npm test
 
-# 2. Bump version
-./.scaffolding/scripts/bump-version.sh patch
+# 2. Run the checks the change needs
+scripts/verify
 
-# 3. Push (hook will verify version)
-git push origin main && git push --tags
+# 3. Push
+git push origin main
 ```
 
 ---
 
-**Version**: 2.0.0  
-**Last Updated**: 2026-03-16  
-**Maintainer**: my-vibe-scaffolding template
+**Maintained by**: the `ai-scheme` skeleton. Edit it there, not here --
+`ai-scheme update` overwrites this file.

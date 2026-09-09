@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Check one pull request against the contract.
+#
+#   scripts/validate-pr-policy 34
+#
+# A draft is checked for its title and branch name only. Marking it ready is
+# the claim that the rest should pass now.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run pr validate "$@"
