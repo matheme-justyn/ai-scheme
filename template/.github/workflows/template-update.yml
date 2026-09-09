@@ -19,6 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
 
       - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
 
@@ -36,6 +38,8 @@ jobs:
         if: steps.check.outputs.available == 'True'
         env:
           GH_TOKEN: ${{ github.token }}
+          # Through the environment, not interpolated into the script: a tag
+          # name is data, and data does not belong in a shell command.
           LATEST: ${{ steps.check.outputs.latest }}
         run: |
           title="Skeleton update available: ${LATEST}"

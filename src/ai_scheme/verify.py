@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from ai_scheme import docs, issues, leasescan, ownership, selfhost, tools
+from ai_scheme import docs, issues, leasescan, ownership, selfhost, tools, workflows
 from ai_scheme.paths import TEMPLATE_RELPATH
 from ai_scheme.tiers import Tier
 
@@ -137,15 +137,25 @@ def stage_static(root: Path) -> StageResult:
     unleased = leasescan.scan(root)
     findings.extend(str(write) for write in unleased)
 
-    workflows = sorted(root.glob(".github/workflows/*.yml"))
-    if workflows:
+    flows = workflows.workflow_files(root)
+    if flows:
         try:
             actionlint = tools.ensure(root, "actionlint")
+            zizmor = tools.ensure(root, "zizmor")
         except tools.ToolError as exc:
-            return StageResult(False, "actionlint unavailable", (str(exc),))
-        code, output = _run([str(actionlint), *(str(path) for path in workflows)], root)
+            return StageResult(False, "workflow linters unavailable", (str(exc),))
+
+        code, output = _run([str(actionlint), *(str(path) for path in flows)], root)
         if code != 0:
             findings.append(output)
+
+        code, output = _run(
+            [str(zizmor), "--no-progress", "--persona=regular", *(str(p) for p in flows)], root
+        )
+        if code not in (0,):
+            findings.append(output)
+
+        findings.extend(str(finding) for finding in workflows.check_pinning_in(root))
 
     try:
         gitleaks = tools.ensure(root, "gitleaks")
@@ -308,7 +318,9 @@ def stage_issues(root: Path) -> StageResult:
 def stage_dependencies(root: Path) -> StageResult:
     """Known vulnerabilities in what this project depends on."""
     lockfiles = [
-        name for name in ("uv.lock", "package-lock.json", "Cargo.lock") if (root / name).is_file()
+        name
+        for name in ("uv.lock", "requirements.txt", "package-lock.json", "Cargo.lock", "go.sum")
+        if (root / name).is_file()
     ]
     if not lockfiles:
         return StageResult(True, "no lockfile to scan")

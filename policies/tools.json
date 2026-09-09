@@ -76,6 +76,21 @@
           "sha256": "8fcb33017a0dc1058298c923c436d19dfa68ae93968e0b423248542e3afb9fc3"
         }
       }
+    },
+    "zizmor": {
+      "version": "1.30.0",
+      "url": "https://github.com/zizmorcore/zizmor/releases/download/v{version}/zizmor-{platform}.tar.gz",
+      "member": "zizmor",
+      "platforms": {
+        "darwin-arm64": {
+          "platform": "aarch64-apple-darwin",
+          "sha256": "c9c5d83730efb86f2cd71b487605c00a4d63903e4f9458485ed5eac3b1924ab1"
+        },
+        "linux-x86_64": {
+          "platform": "x86_64-unknown-linux-gnu",
+          "sha256": "ec8c95cd800845abb9bbc5f377ec7c57d2eb8e2386a00a201d3a74ee4092e5ed"
+        }
+      }
     }
   }
 }

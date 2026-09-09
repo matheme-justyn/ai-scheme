@@ -135,3 +135,21 @@ def test_a_commented_out_call_is_not_a_call(tmp_path: Path) -> None:
     )
 
     assert verify.sibling_calls(scripts / "install", tmp_path) == []
+
+
+@pytest.mark.slow
+def test_the_dependency_stage_fails_on_a_known_vulnerable_lockfile(tmp_path: Path) -> None:
+    """The fixture #15 asks for: a real advisory, through the real scanner."""
+    (tmp_path / "policies").mkdir()
+    (tmp_path / tools.POLICY_RELPATH).write_text(
+        (REPO_ROOT / tools.POLICY_RELPATH).read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    # requests 2.19.0 has published advisories; the lockfile name is what
+    # osv-scanner keys on.
+    (tmp_path / "requirements.txt").write_text("requests==2.19.0\n", encoding="utf-8")
+    (tmp_path / "uv.lock").write_text("", encoding="utf-8")
+
+    result = verify.stage_dependencies(tmp_path)
+
+    assert not result.ok
+    assert "osv-scanner exited" in result.detail

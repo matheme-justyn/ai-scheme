@@ -45,6 +45,7 @@ from ai_scheme import (
 )
 from ai_scheme import status as status_module
 from ai_scheme import verify as verify_module
+from ai_scheme import workflows as workflows_module
 from ai_scheme.paths import OWNERSHIP_RELPATH, UNINSTALL_RELPATH, package_root, repo_root
 from ai_scheme.tiers import Tier, changed_paths, classify
 
@@ -596,6 +597,67 @@ def cmd_release(root: Path, repo: str, args: Any) -> int:
             print(f"  {problem}", file=sys.stderr)
         return EXIT_NO
     print("every published artefact matches its checksum")
+    return EXIT_OK
+
+
+def cmd_secrets_scan(root: Path) -> int:
+    """gitleaks over the working tree and over reachable history.
+
+    History is the half people forget: a secret removed in a later commit is
+    still published, and finding that out later costs a history rewrite.
+    """
+    try:
+        gitleaks = tools.ensure(root, "gitleaks")
+    except tools.ToolError as exc:
+        print(f"gitleaks unavailable: {exc}", file=sys.stderr)
+        return EXIT_UNDETERMINED
+
+    config = ["--config", ".gitleaks.toml"] if (root / ".gitleaks.toml").is_file() else []
+    failed = False
+    for label, arguments in (
+        ("working tree", [str(gitleaks), "dir", ".", "--no-banner", "--redact", *config]),
+        ("history", [str(gitleaks), "git", ".", "--no-banner", "--redact", *config]),
+    ):
+        result = subprocess.run(arguments, cwd=root, capture_output=True, text=True, check=False)
+        if result.returncode != 0:
+            failed = True
+            print(f"{label}: leaks found", file=sys.stderr)
+            print((result.stdout + result.stderr).strip(), file=sys.stderr)
+        else:
+            print(f"{label}: clean")
+    return EXIT_NO if failed else EXIT_OK
+
+
+def cmd_workflows_lint(root: Path) -> int:
+    problems: list[str] = []
+    flows = workflows_module.workflow_files(root)
+    if not flows:
+        print("no workflows to lint")
+        return EXIT_OK
+
+    for name in ("actionlint", "zizmor"):
+        try:
+            binary = tools.ensure(root, name)
+        except tools.ToolError as exc:
+            print(f"{name} unavailable: {exc}", file=sys.stderr)
+            return EXIT_UNDETERMINED
+        arguments = [str(binary)]
+        if name == "zizmor":
+            arguments += ["--no-progress", "--persona=regular"]
+        arguments += [str(path) for path in flows]
+        result = subprocess.run(arguments, cwd=root, capture_output=True, text=True, check=False)
+        if result.returncode != 0:
+            problems.append(f"{name}:\n{(result.stdout + result.stderr).strip()}")
+
+    unpinned = workflows_module.check_pinning_in(root)
+    problems.extend(str(finding) for finding in unpinned)
+
+    if problems:
+        print(f"{len(problems)} problem(s) in the workflows:", file=sys.stderr)
+        for problem in problems:
+            print(f"  {problem}", file=sys.stderr)
+        return EXIT_NO
+    print(f"{len(flows)} workflow(s): valid, pinned, and no dangerous patterns")
     return EXIT_OK
 
 

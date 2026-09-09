@@ -14,6 +14,7 @@ The template put these here and nothing else did. Removing them removes the skel
 | --- | --- | --- |
 | `.github/ISSUE_TEMPLATE/` | template |  |
 | `.github/PULL_REQUEST_TEMPLATE.md` | template |  |
+| `.github/dependabot.yml` | template | Update groups per ecosystem, chosen from the languages answer. Minor and patch merge themselves once checks pass; a major waits for a person. |
 | `.github/workflows/` | template |  |
 | `.gitleaks.toml` | template | Secret scanning rules, so the same ones apply everywhere. |
 | `.scheme/README.md` | template | Orientation for the answers file. Copier owns the header of config.yml itself, so the explanation of why a project can hold two configuration files lives beside it rather than inside it -- see ADR 0008. |

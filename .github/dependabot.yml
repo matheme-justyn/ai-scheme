@@ -1,0 +1,31 @@
+# Dependency updates, grouped so that a week's worth arrives as a few pull
+# requests rather than twenty. Minor and patch merge themselves once the
+# checks pass; a major waits for a person.
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      # The official actions move together and are reviewed together.
+      official-actions:
+        patterns:
+          - "actions/*"
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: chore
+
+  - package-ecosystem: uv
+    directory: "/"
+    schedule:
+      interval: weekly
+    groups:
+      python-minor-patch:
+        patterns: ["*"]
+        update-types: [minor, patch]
+    commit-message:
+      prefix: chore

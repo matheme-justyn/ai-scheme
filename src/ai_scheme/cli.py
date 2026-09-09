@@ -197,6 +197,14 @@ def build_parser() -> argparse.ArgumentParser:
         "apply", help="Write one area. Branch rules and security switches are not included."
     )
 
+    secrets = sub.add_parser("secrets", help="Secret scanning, tree and history (#15).")
+    secrets_sub = secrets.add_subparsers(dest="secrets_command", required=True)
+    secrets_sub.add_parser("scan", help="gitleaks over the working tree and reachable history.")
+
+    flows = sub.add_parser("workflows", help="Workflow linting and pinning (#15).")
+    flows_sub = flows.add_subparsers(dest="workflows_command", required=True)
+    flows_sub.add_parser("lint", help="actionlint, zizmor, and the SHA pinning check.")
+
     documents = sub.add_parser("docs", help="The durable documentation layers (#10).")
     documents_sub = documents.add_subparsers(dest="docs_command", required=True)
     documents_sub.add_parser("validate", help="Check specs and decision records.")
@@ -308,6 +316,10 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "settings":
             client_repo = args.repo or gh.Client().current_repo()
             return commands.cmd_settings(root, client_repo, args.settings_command, args.area)
+        if args.command == "secrets":
+            return commands.cmd_secrets_scan(root)
+        if args.command == "workflows":
+            return commands.cmd_workflows_lint(root)
         if args.command == "docs":
             return commands.cmd_docs_validate(root)
         if args.command == "tools":

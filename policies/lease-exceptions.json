@@ -1,4 +1,10 @@
 {
-  "$comment": "Paths allowed to write pull request state without taking a lease. Exact paths only -- no globs, because a glob stops being reviewable the moment it matches something new. Every entry names the issue that tracks removing it.",
-  "exceptions": []
+  "$comment": "Paths allowed to write pull request state without taking a lease. Exact paths only -- no globs, because a glob stops being reviewable the moment it matches something new. Every entry names the issue that tracks it.",
+  "exceptions": [
+    {
+      "path": ".github/workflows/dependabot-auto-merge.yml",
+      "issue": "#15",
+      "reason": "Dependabot's own pull requests, merged by GitHub's auto-merge once checks pass. No agent session writes here, so there is no session to serialise against; the lease exists to stop two agents racing, not to stop GitHub merging its own bot's work."
+    }
+  ]
 }

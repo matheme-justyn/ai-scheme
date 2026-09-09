@@ -1,0 +1,43 @@
+# Minor and patch updates merge themselves once the checks pass. A major waits
+# for a person, and says so with a label.
+#
+# The judgement about which is which comes from Dependabot's own metadata, not
+# from parsing a title.
+name: Dependabot auto-merge
+
+# pull_request_target is what gives this a token that can merge. It is only
+# dangerous when the workflow checks out the pull request's code, because that
+# code then runs with those permissions. This one never checks anything out --
+# it reads Dependabot's metadata and calls gh. Do not add a checkout step here.
+on: pull_request_target # zizmor: ignore[dangerous-triggers]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  triage:
+    # The pull request's author, not github.actor: an actor check can be
+    # spoofed by anybody who can trigger the workflow.
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read the update's metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for minor and patch
+        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash "$PR_URL"
+
+      - name: Send a major to a person
+        if: steps.metadata.outputs.update-type == 'version-update:semver-major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr edit "$PR_URL" --add-label needs-manual-review
