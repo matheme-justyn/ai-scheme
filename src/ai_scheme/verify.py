@@ -74,6 +74,31 @@ def _run(command: list[str], root: Path) -> tuple[int, str]:
 
 SHELL_GLOBS = ("scripts/*", "hooks/*", "template/scripts/*", "template/hooks/*")
 
+# `"$(dirname "$0")/other"` and `scripts/other` -- the two ways a script in this
+# template reaches a sibling.
+SIBLING_CALL = re.compile(r"""\$\(dirname\s+"?\$0"?\)/([A-Za-z0-9._-]+)""")
+SCRIPTS_CALL = re.compile(r"(?<![\w/.-])scripts/([A-Za-z0-9._-]+)")
+
+
+def sibling_calls(script: Path, root: Path) -> list[tuple[int, str, Path]]:
+    """Every sibling script a shell script names, with where it should be.
+
+    A syntax check proves a script parses, not that what it calls exists. The
+    mechanism layer lost its main install path to exactly this: three call
+    sites for a script that had been deleted, under `set -e`, with CI green.
+    """
+    calls: list[tuple[int, str, Path]] = []
+    for number, line in enumerate(script.read_text(encoding="utf-8").splitlines(), start=1):
+        code = line.split("#", 1)[0] if not line.lstrip().startswith("#") else ""
+        for match in SIBLING_CALL.finditer(code):
+            calls.append((number, match.group(1), script.parent / match.group(1)))
+        for match in SCRIPTS_CALL.finditer(code):
+            # `scripts/x` is written relative to the repository root -- and to
+            # the template body's root, for a script that ships.
+            base = root / "template" if "template" in script.relative_to(root).parts else root
+            calls.append((number, f"scripts/{match.group(1)}", base / "scripts" / match.group(1)))
+    return calls
+
 
 def shell_files(root: Path) -> list[Path]:
     found: list[Path] = []
@@ -101,6 +126,13 @@ def stage_static(root: Path) -> StageResult:
         code, output = _run([str(shellcheck), *(str(path) for path in scripts)], root)
         if code != 0:
             findings.append(output)
+
+    for script in scripts:
+        for number, name, expected in sibling_calls(script, root):
+            if not expected.exists():
+                findings.append(
+                    f"{script.relative_to(root)}:{number}: calls {name}, which does not exist"
+                )
 
     workflows = sorted(root.glob(".github/workflows/*.yml"))
     if workflows:

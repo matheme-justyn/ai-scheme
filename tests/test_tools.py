@@ -97,3 +97,41 @@ def test_gitleaks_fails_on_a_planted_secret(tmp_path: Path) -> None:
 
     assert not result.ok
     assert "static analysis" in result.detail
+
+
+def test_a_call_to_a_missing_sibling_script_fails(tmp_path: Path) -> None:
+    """A syntax check proves a script parses, not that what it calls exists (#42)."""
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "install").write_text(
+        '#!/usr/bin/env bash\nset -euo pipefail\n"$(dirname "$0")/setup-hooks"\n',
+        encoding="utf-8",
+    )
+
+    calls = verify.sibling_calls(scripts / "install", tmp_path)
+
+    assert [(number, name) for number, name, _ in calls] == [(3, "setup-hooks")]
+    assert not calls[0][2].exists()
+
+
+def test_a_call_to_a_sibling_that_exists_is_fine(tmp_path: Path) -> None:
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "setup-hooks").write_text("#!/usr/bin/env bash\n", encoding="utf-8")
+    (scripts / "install").write_text(
+        '#!/usr/bin/env bash\n"$(dirname "$0")/setup-hooks"\n', encoding="utf-8"
+    )
+
+    calls = verify.sibling_calls(scripts / "install", tmp_path)
+
+    assert calls[0][2].exists()
+
+
+def test_a_commented_out_call_is_not_a_call(tmp_path: Path) -> None:
+    scripts = tmp_path / "scripts"
+    scripts.mkdir()
+    (scripts / "install").write_text(
+        '#!/usr/bin/env bash\n# we used to run "$(dirname "$0")/old-thing"\n', encoding="utf-8"
+    )
+
+    assert verify.sibling_calls(scripts / "install", tmp_path) == []
