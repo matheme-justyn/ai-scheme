@@ -35,6 +35,7 @@ The template put these here and nothing else did. Removing them removes the skel
 | `i18n/` | template |  |
 | `ownership.yml` | template | This file. |
 | `policies/` | template | Declared policy the checks read -- link exceptions, and more to come. |
+| `release-please-config.json` | template | How the version pull request is produced. Nobody edits a version by hand. |
 | `schemas/` | template |  |
 | `scripts/` | template | Lifecycle and verification entry points. |
 
@@ -53,6 +54,7 @@ Seeded once at creation and never touched again. Uninstalling the template does 
 
 | Path | Kind | Detail |
 | --- | --- | --- |
+| `.release-please-manifest.json` | project | The current version. Owned by the project because release-please rewrites it on every release; the template seeds it and never touches it again. |
 | `CHANGELOG.md` | project |  |
 | `LICENSE` | project |  |
 | `docs/adr/` | project | Decision records belong to the project. The template seeds ADR 0001 and the README, then never touches this directory again. |

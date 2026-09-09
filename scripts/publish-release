@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Build a release's artefacts, or check the ones already published.
+#
+#   scripts/publish-release build  --tag v1.2.0 --out dist
+#   scripts/publish-release verify --tag v1.2.0 --out verify
+#
+# `build` produces the source archive, SHA256SUMS and an SPDX SBOM from the
+# pinned syft. `verify` downloads what is on the release and re-hashes it
+# against its own checksum file -- the same command CI runs, so a failed
+# hosted release can be finished by hand without inventing a second procedure.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run release "$@"

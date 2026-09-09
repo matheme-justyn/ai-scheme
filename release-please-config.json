@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "$comment": "The version comes from the intent already declared in pull request titles -- feat is a minor, fix is a patch, ! is a major. Nobody edits a version by hand, and no hook blocks a push over one.",
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "package-name": "{{ project_slug }}",
+      "changelog-path": "CHANGELOG.md",
+      "include-component-in-tag": false,
+      "draft": false,
+      "prerelease": false
+    }
+  },
+  "pull-request-title-pattern": "chore: release ${version}",
+  "separate-pull-requests": false
+}

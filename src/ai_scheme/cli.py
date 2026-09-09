@@ -21,6 +21,7 @@ from pathlib import Path
 
 from ai_scheme import __version__, commands, config, gh, lease, ownership, selfhost
 from ai_scheme import plan as plan_module
+from ai_scheme import release as release_module
 from ai_scheme import verify as verify_module
 from ai_scheme.commands import EXIT_NO, EXIT_OK, EXIT_UNDETERMINED
 from ai_scheme.tiers import Tier
@@ -140,6 +141,20 @@ def build_parser() -> argparse.ArgumentParser:
             metavar="PLAN.JSON",
             help="Apply this plan instead of producing a new one.",
         )
+
+    ship = sub.add_parser("release", help="Release artefacts and their evidence (#14).")
+    ship.add_argument("--repo", default=None, metavar="OWNER/NAME", help="Defaults to this one.")
+    ship_sub = ship.add_subparsers(dest="release_command", required=True)
+
+    ship_build = ship_sub.add_parser("build", help="Source archive, checksums and SBOM.")
+    ship_build.add_argument("--tag", required=True)
+    ship_build.add_argument("--out", type=Path, default=Path("dist"))
+
+    ship_verify = ship_sub.add_parser("verify", help="Download the release and re-hash it.")
+    ship_verify.add_argument("--tag", required=True)
+    ship_verify.add_argument("--out", type=Path, default=Path("verify"))
+
+    ship_sub.add_parser("drift", help="Has main moved on without a release?")
 
     held = sub.add_parser("lease", help="The pull request control plane lease (#19).")
     held.add_argument("--remote", default=None, help="Operate on this remote instead of locally.")
@@ -283,6 +298,11 @@ def main(argv: list[str] | None = None) -> int:
                     target, args.repo or commands.TEMPLATE_REPO, as_json=True
                 )
             return commands.cmd_lifecycle(target, plan_module.Mode(args.command), args)
+        if args.command == "release":
+            target_repo = args.repo
+            if args.release_command == "drift" and target_repo is None:
+                target_repo = gh.Client().current_repo()
+            return commands.cmd_release(root, target_repo or "", args)
         if args.command == "lease":
             return commands.cmd_lease(root, args)
         if args.command == "settings":
@@ -329,6 +349,7 @@ def main(argv: list[str] | None = None) -> int:
         gh.GhError,
         lease.LeaseError,
         ownership.OwnershipError,
+        release_module.ReleaseError,
         selfhost.SelfHostError,
     ) as exc:
         print(f"ai-scheme: {exc}", file=sys.stderr)

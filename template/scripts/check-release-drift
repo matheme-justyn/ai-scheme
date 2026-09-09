@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Has the default branch moved on without a release for longer than it should?
+#
+# Prints JSON and changes nothing. Commits without a release are normal; a
+# release workflow that has been failing quietly for a week is not.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run release drift "$@"

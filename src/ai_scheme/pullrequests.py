@@ -17,6 +17,13 @@ from typing import Any
 CLOSING_KEYWORD = re.compile(r"\b(?:close[sd]?|fixe?[sd]?|resolve[sd]?)\s+#(\d+)\b", re.IGNORECASE)
 CHECKBOX = re.compile(r"^\s*[-*]\s+\[( |x|X)\]", re.MULTILINE)
 BRANCH = re.compile(r"^(feat|fix|docs|refactor|test|chore)/(\d+)-[a-z0-9][a-z0-9-]*$")
+
+# release-please opens its own pull request from a branch it names, with a body
+# it writes: a changelog, no closing keyword, no checklist. It is machine-made
+# from intent that was already reviewed in the pull requests it summarises, so
+# the contract that governs human work does not apply to it. Named exactly, not
+# by pattern -- see #14.
+GENERATED_BRANCHES = ("release-please--",)
 TITLE = re.compile(r"^(feat|fix|docs|refactor|test|chore)(\([a-z0-9][a-z0-9-]*\))?!?: .+$")
 
 TYPES = ("feat", "fix", "docs", "refactor", "test", "chore")
@@ -132,12 +139,18 @@ def validate_ready(
     return problems
 
 
+def is_generated(pull: dict[str, Any]) -> bool:
+    return pull.get("headRefName", "").startswith(GENERATED_BRANCHES)
+
+
 def validate(
     pull: dict[str, Any],
     issue: dict[str, Any] | None,
     *,
     collaboration_mode: str = "solo",
 ) -> list[Problem]:
+    if is_generated(pull):
+        return []
     if pull.get("isDraft"):
         return validate_shape(pull)
     return validate_ready(pull, issue, collaboration_mode=collaboration_mode)

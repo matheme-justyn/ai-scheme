@@ -169,6 +169,7 @@ _exclude:
   - copier.yml
   - ownership.yml
 _skip_if_exists:
+  - .release-please-manifest.json
   - CHANGELOG.md
   - LICENSE
   - docs/adr/
