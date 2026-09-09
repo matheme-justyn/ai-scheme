@@ -50,8 +50,19 @@ pass now".
 
 ## Documentation
 
-Read `docs/guides/DOCUMENTATION_GUIDELINES.md` before creating a document.
-Decisions go to `docs/adr/`, guides to `docs/guides/`, nothing to the root.
+Read `docs/guides/DOCUMENTATION_GUIDELINES.md` before creating a document, and
+`docs/README.md` for which of the four layers a thing belongs in: specs say
+what must be true, decision records say why, issues carry the work, tests check
+the behaviour.
+
+Decisions go to `docs/adr/`, specs to `docs/specs/`, guides to `docs/guides/`,
+nothing to the root.
+
+**Never commit a conversation.** No transcripts, no agent reasoning, no
+inference that nobody has confirmed written as though it were established, and
+no plan file that duplicates the issues. If something from a conversation is
+worth keeping, rewrite it as a spec, a decision record or an issue, in the
+repository's voice. `scripts/validate-docs` checks the shape of the first two.
 
 Configuration lives in `.scheme/config.yml`; read it with
 `ai-scheme config get <key>` rather than parsing it. If this project also uses
