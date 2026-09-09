@@ -40,3 +40,6 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+  "slow: renders the real template; part of the full tier, skipped by `-m 'not slow'`",
+]
