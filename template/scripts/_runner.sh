@@ -10,8 +10,17 @@ ai_scheme_run() {
   elif [ -f pyproject.toml ] && grep -q '^name = "ai-scheme"' pyproject.toml; then
     uv run ai-scheme "$@"
   else
-    # Pinning this to a released version is #6; until then it tracks the
-    # default branch, which is what `ai-scheme update` would fetch anyway.
-    uvx --from git+https://github.com/matheme-justyn/ai-scheme ai-scheme "$@"
+    # Run the release this project was applied from, not whatever the default
+    # branch happens to be today. The tag is recorded in provenance.json by
+    # the lifecycle command that applied it.
+    tag=""
+    if [ -f .scheme/provenance.json ]; then
+      tag="$(python3 -c 'import json,sys; print(json.load(open(".scheme/provenance.json")).get("tag") or "")' 2>/dev/null || true)"
+    fi
+    if [ -n "$tag" ]; then
+      uvx --from "git+https://github.com/matheme-justyn/ai-scheme@${tag}" ai-scheme "$@"
+    else
+      uvx --from git+https://github.com/matheme-justyn/ai-scheme ai-scheme "$@"
+    fi
   fi
 }

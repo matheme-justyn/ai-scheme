@@ -1,0 +1,50 @@
+# Weekly: is there a newer release of the skeleton?
+#
+# It opens or updates one issue and stops there. Applying an update is a
+# decision with a plan attached (`ai-scheme update`), not something a schedule
+# should do to a repository while nobody is looking.
+name: Template update
+
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+
+      - name: Ask whether a newer release exists
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          answer="$(scripts/update-check)"
+          echo "$answer"
+          echo "available=$(echo "$answer" | python3 -c 'import json,sys; print(json.load(sys.stdin)["update_available"])')" >> "$GITHUB_OUTPUT"
+          echo "latest=$(echo "$answer" | python3 -c 'import json,sys; print(json.load(sys.stdin)["latest_tag"])')" >> "$GITHUB_OUTPUT"
+
+      - name: Open or update one issue
+        if: steps.check.outputs.available == 'True'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LATEST: ${{ steps.check.outputs.latest }}
+        run: |
+          title="Skeleton update available: ${LATEST}"
+          existing="$(gh issue list --search "in:title Skeleton update available" --state open --json number,title --jq '.[0].number')"
+          body="A newer release of the skeleton is published: \`${LATEST}\`.
+
+          Run \`ai-scheme update --tag ${LATEST}\` to produce a plan. Nothing is applied automatically."
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --title "$title" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label type:task
+          fi
