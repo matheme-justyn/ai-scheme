@@ -266,9 +266,8 @@ def test_the_report_names_what_needs_a_human(tmp_path: Path, rendered: Path) -> 
     assert "scripts/verify" in report
 
 
-@pytest.mark.slow
 def test_create_then_status_reports_current(tmp_path: Path) -> None:
-    """End to end against the real template, which is also #12's smoke test."""
+    """The fast tier's create smoke: one language, real template, end to end."""
     target = tmp_path / "project"
     git_init(target)
     out = tmp_path / "plan"
