@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from ai_scheme import ownership, selfhost
+from ai_scheme import issues, ownership, selfhost
 from ai_scheme.paths import TEMPLATE_RELPATH
 from ai_scheme.tiers import Tier
 
@@ -202,9 +202,22 @@ def stage_template(root: Path) -> StageResult:
     return StageResult(True, "generated files and the rendered tree are current")
 
 
+def stage_issues(root: Path) -> StageResult:
+    """The issue forms still ask three questions, with declared labels."""
+    if not (root / issues.FORM_RELDIR).is_dir():
+        return StageResult(True, "no issue forms in this project")
+    problems = issues.validate_forms(root)
+    if problems:
+        return StageResult(
+            False, "the forms drifted from the contract", tuple(str(p) for p in problems)
+        )
+    return StageResult(True, "issue forms match the three-field contract")
+
+
 STAGES: tuple[Stage, ...] = (
     Stage("static", Tier.DOCS, stage_static, "whitespace and shell syntax"),
     Stage("docs", Tier.DOCS, stage_docs, "relative markdown links resolve"),
+    Stage("issues", Tier.DOCS, stage_issues, "issue forms match the contract"),
     Stage("python", Tier.FAST, stage_python, "ruff and pytest"),
     Stage("template", Tier.FULL, stage_template, "ownership and rendered tree"),
 )

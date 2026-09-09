@@ -95,3 +95,53 @@ def test_apply_writes_every_rendered_path(tmp_path: Path) -> None:
     assert written == ["docs/new.md"]
     assert (tree / "docs" / "new.md").read_text() == "from the template\n"
     assert selfhost.compare(tree, rendered_root) == []
+
+
+def test_managed_block_files_are_compared_block_for_block(tmp_path: Path) -> None:
+    """A project's own instructions must survive an update -- ADR 0008."""
+    rendered_root = tmp_path / "rendered"
+    tree = tmp_path / "tree"
+    rendered_root.mkdir()
+    tree.mkdir()
+    (tree / "ownership.yml").write_text(
+        "version: 1\n"
+        "kinds:\n"
+        "  managed-block:\n"
+        "    update: replace-block\n"
+        "paths:\n"
+        "  - path: AGENTS.md\n"
+        "    kind: managed-block\n"
+        "    block: ai-scheme:conventions\n",
+        encoding="utf-8",
+    )
+    block = (
+        "<!-- BEGIN ai-scheme:conventions -->\n"
+        "run scripts/verify\n"
+        "<!-- END ai-scheme:conventions -->"
+    )
+    (rendered_root / "AGENTS.md").write_text(f"# Title\n\n{block}\n", encoding="utf-8")
+    (tree / "AGENTS.md").write_text(
+        f"# This project\n\nour own rules\n\n{block}\n", encoding="utf-8"
+    )
+
+    blocks = selfhost.managed_blocks(tree)
+    assert blocks == {"AGENTS.md": "ai-scheme:conventions"}
+    # The prose differs, the block does not: nothing to report.
+    assert selfhost.compare(tree, rendered_root) == []
+
+
+def test_replace_block_keeps_the_project_prose(tmp_path: Path) -> None:
+    current = (
+        "# This project\n\nour own rules\n\n"
+        "<!-- BEGIN ai-scheme:conventions -->\nold\n<!-- END ai-scheme:conventions -->\n"
+    )
+    rendered = (
+        "# Anything\n\n"
+        "<!-- BEGIN ai-scheme:conventions -->\nnew\n<!-- END ai-scheme:conventions -->\n"
+    )
+
+    merged = selfhost.replace_block(current, rendered, "ai-scheme:conventions")
+
+    assert "our own rules" in merged
+    assert "new" in merged
+    assert "old" not in merged

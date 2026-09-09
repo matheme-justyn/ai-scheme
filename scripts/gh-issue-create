@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# `gh issue create` with the title checked first, and a nudge about the open
+# milestone. Everything after the title is passed through untouched.
+#
+#   scripts/gh-issue-create "Add a deterministic status command" --label type:task
+#
+# The milestone hint is a hint: it prints, it does not block and it does not
+# add the milestone for you. Leaf issues carry the milestone, Feature parents
+# do not -- see docs/milestone-description.md.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+
+if [ "$#" -lt 1 ]; then
+  echo "usage: $(basename "$0") <title> [gh issue create options...]" >&2
+  exit 2
+fi
+
+title="$1"
+shift
+
+ai_scheme_run issue validate-title "$title"
+
+if command -v gh >/dev/null 2>&1; then
+  open_milestones="$(gh api "repos/{owner}/{repo}/milestones?state=open" --jq '.[].title' 2>/dev/null || true)"
+  if [ "$(printf '%s\n' "$open_milestones" | grep -c .)" = "1" ]; then
+    echo "note: one open milestone -- ${open_milestones}" >&2
+    echo "      add --milestone \"${open_milestones}\" if this issue is a leaf of it" >&2
+  fi
+fi
+
+exec gh issue create --title "$title" "$@"

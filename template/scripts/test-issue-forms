@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Check that the issue forms still match the three-field contract.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run issue check-forms

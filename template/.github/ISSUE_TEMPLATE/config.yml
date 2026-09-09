@@ -1,0 +1,3 @@
+# Blank issues are off: an issue with no form is an issue with no completion
+# condition, and the whole contract starts there.
+blank_issues_enabled: false

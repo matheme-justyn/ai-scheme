@@ -1,0 +1,37 @@
+# Task issue form.
+#
+# Three fields, all of them load-bearing. The twenty-field templates this
+# replaces were filled in by nobody -- see ai-scheme #7.
+
+name: Task
+description: One unit of work, usually under a Feature.
+labels: ["type:task"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        建立前先用 2-4 個具體詞搜尋 open 與 closed issues。沿用、取代或駁回既有決策時，寫進「補充」。
+        只有真實先後限制才寫 blocked-by，不要用它表達「順序上比較晚做」。
+  - type: textarea
+    id: problem
+    attributes:
+      label: 問題
+      description: 現在是什麼狀況，為什麼不能維持現狀。
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 完成條件
+      description: 可勾選的清單。每一條都要能被別人檢查。
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: 補充
+      description: 取捨、相依、驗證方式、沿用或駁回的既有決策。
+    validations:
+      required: false

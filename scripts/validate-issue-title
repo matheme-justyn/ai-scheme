@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Check an issue title against the contract before the issue exists.
+#
+#   scripts/validate-issue-title "Add a deterministic status command"
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run issue validate-title "$@"

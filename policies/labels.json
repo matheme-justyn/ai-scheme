@@ -1,0 +1,13 @@
+{
+  "$comment": "The label set this repository declares. `ai-scheme settings apply` (#13) creates them; the issue forms may only use names listed here.",
+  "labels": [
+    {"name": "type:feature", "color": "1D76DB", "description": "A shared outcome several tasks add up to"},
+    {"name": "type:task", "color": "0E8A16", "description": "One unit of work"},
+    {"name": "type:bug", "color": "D73A4A", "description": "Behaviour differs from what was agreed"},
+    {"name": "type:docs", "color": "5319E7", "description": "A document is missing, wrong or out of date"},
+    {"name": "enhancement", "color": "A2EEEF", "description": "New behaviour"},
+    {"name": "documentation", "color": "0075CA", "description": "Documentation only"},
+    {"name": "hotfix", "color": "B60205", "description": "Forces the full verification tier"},
+    {"name": "needs-manual-review", "color": "FBCA04", "description": "A check could not decide; a human has to look"}
+  ]
+}
