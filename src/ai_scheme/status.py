@@ -19,7 +19,7 @@ not an error and never leaves through a non-zero code.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -99,7 +99,8 @@ def parse_version(value: str | None) -> tuple[int, int, int] | None:
     match = VERSION.match((value or "").strip())
     if not match:
         return None
-    return tuple(int(part) for part in match.groups())  # type: ignore[return-value]
+    major, minor, patch = match.groups()
+    return int(major), int(minor), int(patch)
 
 
 def is_behind(current: str | None, target: str | None) -> bool | None:
@@ -118,18 +119,20 @@ def _listed(items: list[str]) -> str:
 
 def judge(facts: Facts) -> Status:
     """The state machine. One state, one reason, one next command."""
-    unknowns = "unknown" if facts.drift is None else list(facts.drift)
-    policy = "unknown" if facts.policy_drift is None else list(facts.policy_drift)
-    common = {
-        "current_version": facts.current_version,
-        "target_version": facts.target_version,
-        "drift": unknowns,
-        "policy_drift": policy,
-        "mechanism_config_detected": facts.mechanism_config,
-    }
+    unknowns: list[str] | str = UNKNOWN if facts.drift is None else list(facts.drift)
+    policy: list[str] | str = UNKNOWN if facts.policy_drift is None else list(facts.policy_drift)
 
     def answer(state: str, reason: str) -> Status:
-        return Status(state=state, reason=reason, next_command=NEXT_COMMAND[state], **common)
+        return Status(
+            state=state,
+            reason=reason,
+            next_command=NEXT_COMMAND[state],
+            current_version=facts.current_version,
+            target_version=facts.target_version,
+            drift=unknowns,
+            policy_drift=policy,
+            mechanism_config_detected=facts.mechanism_config,
+        )
 
     if not facts.exists or facts.empty:
         return answer(State.CREATE, "the target is missing or empty")
@@ -211,14 +214,14 @@ def collect(root: Path, *, target_version: str, allow_render: bool = True) -> Fa
     """
     from ai_scheme import config, selfhost
 
-    facts = observe(root)
+    facts = replace(observe(root), target_version=target_version)
     if not facts.has_answers:
-        return Facts(**{**facts.__dict__, "target_version": target_version})
+        return facts
 
     try:
         answers = config.load_answers(root)
     except config.ConfigError:
-        return Facts(**{**facts.__dict__, "target_version": target_version})
+        return facts
 
     current_version = answers.get("_commit")
     drift: tuple[str, ...] | None = None
@@ -232,11 +235,4 @@ def collect(root: Path, *, target_version: str, allow_render: bool = True) -> Fa
             # this run, not about the project.
             drift = None
 
-    return Facts(
-        **{
-            **facts.__dict__,
-            "current_version": current_version,
-            "target_version": target_version,
-            "drift": drift,
-        }
-    )
+    return replace(facts, current_version=current_version, drift=drift)

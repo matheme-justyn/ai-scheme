@@ -17,7 +17,7 @@ def test_stages_grow_with_the_tier() -> None:
     docs = [stage.name for stage in verify.stages_for(Tier.DOCS)]
     full = [stage.name for stage in verify.stages_for(Tier.FULL)]
     assert docs == ["static", "docs", "issues"]
-    assert full == ["static", "docs", "issues", "python", "template"]
+    assert full == ["static", "docs", "issues", "python", "template", "dependencies"]
 
 
 def test_prose_only_blanks_fenced_blocks() -> None:

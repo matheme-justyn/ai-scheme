@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from ai_scheme import issues, ownership, selfhost
+from ai_scheme import issues, ownership, selfhost, tools
 from ai_scheme.paths import TEMPLATE_RELPATH
 from ai_scheme.tiers import Tier
 
@@ -72,23 +72,60 @@ def _run(command: list[str], root: Path) -> tuple[int, str]:
     return result.returncode, (result.stdout + result.stderr).strip()
 
 
+SHELL_GLOBS = ("scripts/*", "hooks/*", "template/scripts/*", "template/hooks/*")
+
+
+def shell_files(root: Path) -> list[Path]:
+    found: list[Path] = []
+    for pattern in SHELL_GLOBS:
+        for path in sorted(root.glob(pattern)):
+            if path.is_file() and path.suffix != ".py":
+                found.append(path)
+    return found
+
+
 def stage_static(root: Path) -> StageResult:
-    """Whitespace damage and shell syntax -- the checks that need no network."""
+    """Whitespace, shell, workflows and secrets -- with pinned tools (#11)."""
     findings: list[str] = []
     code, output = _run(["git", "diff", "--check", "HEAD"], root)
     if code not in (0, 128) and output:
         findings.extend(output.splitlines())
 
-    for script in sorted(root.glob("scripts/*")):
-        if not script.is_file() or script.suffix == ".py":
-            continue
-        code, output = _run(["bash", "-n", str(script)], root)
+    scripts = shell_files(root)
+    if scripts:
+        try:
+            shellcheck = tools.ensure(root, "shellcheck")
+        except tools.ToolError as exc:
+            # Fail closed: a check that could not run is not a check that passed.
+            return StageResult(False, "shellcheck unavailable", (str(exc),))
+        code, output = _run([str(shellcheck), *(str(path) for path in scripts)], root)
         if code != 0:
-            findings.append(f"{script.relative_to(root)}: {output}")
+            findings.append(output)
+
+    workflows = sorted(root.glob(".github/workflows/*.yml"))
+    if workflows:
+        try:
+            actionlint = tools.ensure(root, "actionlint")
+        except tools.ToolError as exc:
+            return StageResult(False, "actionlint unavailable", (str(exc),))
+        code, output = _run([str(actionlint), *(str(path) for path in workflows)], root)
+        if code != 0:
+            findings.append(output)
+
+    try:
+        gitleaks = tools.ensure(root, "gitleaks")
+    except tools.ToolError as exc:
+        return StageResult(False, "gitleaks unavailable", (str(exc),))
+    gitleaks_command = [str(gitleaks), "dir", ".", "--no-banner", "--redact"]
+    if (root / ".gitleaks.toml").is_file():
+        gitleaks_command += ["--config", ".gitleaks.toml"]
+    code, output = _run(gitleaks_command, root)
+    if code != 0:
+        findings.append(output)
 
     if findings:
-        return StageResult(False, "syntax or whitespace problems", tuple(findings))
-    return StageResult(True, "no whitespace or shell syntax problems")
+        return StageResult(False, "static analysis found problems", tuple(findings))
+    return StageResult(True, "shellcheck, actionlint and gitleaks are clean")
 
 
 def prose_only(text: str) -> str:
@@ -161,6 +198,10 @@ def stage_python(root: Path) -> StageResult:
     for command in (
         ["uv", "run", "ruff", "check", "."],
         ["uv", "run", "ruff", "format", "--check", "."],
+        # Types are checked over src only: the test helpers build dataclasses
+        # from dictionaries on purpose, which is exactly what a type checker
+        # cannot see through.
+        ["uv", "run", "ty", "check", "src"],
         # The fixtures that render the real template are the full tier's job,
         # in the template stage. This one stays quick enough to run on every
         # commit.
@@ -171,7 +212,7 @@ def stage_python(root: Path) -> StageResult:
             findings.append(f"$ {' '.join(command)}\n{output}")
     if findings:
         return StageResult(False, "lint or tests failed", tuple(findings))
-    return StageResult(True, "ruff and pytest pass")
+    return StageResult(True, "ruff, ty and pytest pass")
 
 
 def stage_template(root: Path) -> StageResult:
@@ -223,12 +264,37 @@ def stage_issues(root: Path) -> StageResult:
     return StageResult(True, "issue forms match the three-field contract")
 
 
+def stage_dependencies(root: Path) -> StageResult:
+    """Known vulnerabilities in what this project depends on."""
+    lockfiles = [
+        name for name in ("uv.lock", "package-lock.json", "Cargo.lock") if (root / name).is_file()
+    ]
+    if not lockfiles:
+        return StageResult(True, "no lockfile to scan")
+
+    try:
+        scanner = tools.ensure(root, "osv-scanner")
+    except tools.ToolError as exc:
+        return StageResult(False, "osv-scanner unavailable", (str(exc),))
+
+    arguments = [str(scanner), "scan", "source"]
+    for name in lockfiles:
+        arguments += ["--lockfile", name]
+    code, output = _run(arguments, root)
+    # 0 clean, 1 vulnerabilities found; anything else is the scanner itself
+    # failing, which is not a pass either.
+    if code != 0:
+        return StageResult(False, f"osv-scanner exited {code}", (output,))
+    return StageResult(True, f"no known vulnerabilities in {', '.join(lockfiles)}")
+
+
 STAGES: tuple[Stage, ...] = (
     Stage("static", Tier.DOCS, stage_static, "whitespace and shell syntax"),
     Stage("docs", Tier.DOCS, stage_docs, "relative markdown links resolve"),
     Stage("issues", Tier.DOCS, stage_issues, "issue forms match the contract"),
     Stage("python", Tier.FAST, stage_python, "ruff and pytest"),
     Stage("template", Tier.FULL, stage_template, "ownership and rendered tree"),
+    Stage("dependencies", Tier.FULL, stage_dependencies, "known vulnerabilities"),
 )
 
 

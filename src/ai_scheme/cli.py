@@ -119,6 +119,13 @@ def build_parser() -> argparse.ArgumentParser:
             help="Apply this plan instead of producing a new one.",
         )
 
+    tooling = sub.add_parser("tools", help="The pinned external checks (#11).")
+    tooling_sub = tooling.add_subparsers(dest="tools_command", required=True)
+    tooling_install = tooling_sub.add_parser(
+        "install", help="Download one pinned tool and print its path."
+    )
+    tooling_install.add_argument("name", help="Tool name from policies/tools.json.")
+
     state = sub.add_parser("status", help="Where this project stands, and what to run next (#4).")
     state.add_argument("path", nargs="?", type=Path, default=None, help="Defaults to -C or cwd.")
     state.add_argument("--json", action="store_true", help="Machine-readable output.")
@@ -200,6 +207,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.command in ("create", "adopt", "update"):
             target = args.path.resolve() if args.path else root
             return commands.cmd_lifecycle(target, plan_module.Mode(args.command), args)
+        if args.command == "tools":
+            return commands.cmd_tools_install(root, args.name)
         if args.command == "status":
             target = args.path.resolve() if args.path else root
             return commands.cmd_status(target, args.json, allow_render=not args.no_render)

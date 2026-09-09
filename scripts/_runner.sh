@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Resolve how to run the ai-scheme CLI. Sourced by the other scripts so that
 # there is one answer to "which ai-scheme is this?" per checkout.
 #

@@ -16,7 +16,17 @@ from typing import Any
 
 import yaml
 
-from ai_scheme import __version__, config, gh, issues, milestones, ownership, pullrequests, selfhost
+from ai_scheme import (
+    __version__,
+    config,
+    gh,
+    issues,
+    milestones,
+    ownership,
+    pullrequests,
+    selfhost,
+    tools,
+)
 from ai_scheme import apply as apply_module
 from ai_scheme import plan as plan_module
 from ai_scheme import status as status_module
@@ -357,6 +367,11 @@ def cmd_pr_validate(client: gh.Client, repo: str, root: Path, number: int) -> in
     for problem in problems:
         print(f"  {problem}", file=sys.stderr)
     return EXIT_NO
+
+
+def cmd_tools_install(root: Path, name: str) -> int:
+    print(tools.ensure(root, name))
+    return EXIT_OK
 
 
 def cmd_verify(root: Path, tier_name: str | None, stage: str | None, base: str) -> int:
