@@ -19,7 +19,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from ai_scheme import __version__, commands, config, gh, ownership, selfhost
+from ai_scheme import __version__, commands, config, gh, lease, ownership, selfhost
 from ai_scheme import plan as plan_module
 from ai_scheme import verify as verify_module
 from ai_scheme.commands import EXIT_NO, EXIT_OK, EXIT_UNDETERMINED
@@ -141,6 +141,37 @@ def build_parser() -> argparse.ArgumentParser:
             help="Apply this plan instead of producing a new one.",
         )
 
+    held = sub.add_parser("lease", help="The pull request control plane lease (#19).")
+    held.add_argument("--remote", default=None, help="Operate on this remote instead of locally.")
+    held_sub = held.add_subparsers(dest="lease_command", required=True)
+
+    def add_target(parser: argparse.ArgumentParser) -> None:
+        target = parser.add_mutually_exclusive_group(required=True)
+        target.add_argument("--pr", type=int, help="Pull request number.")
+        target.add_argument("--lane", help="Destination branch, for a lane lease.")
+
+    held_acquire = held_sub.add_parser("acquire", help="Take the lease, or reclaim an expired one.")
+    add_target(held_acquire)
+    held_acquire.add_argument("--base", required=True, help="Destination branch.")
+    held_acquire.add_argument("--head", required=True, help="Full head SHA this work is against.")
+    held_acquire.add_argument("--ttl", type=float, default=900.0, help="Seconds. Default 900.")
+    held_acquire.add_argument("--holder", default=None, help="Who is holding it, for the report.")
+
+    held_renew = held_sub.add_parser("renew", help="Extend a lease you hold.")
+    add_target(held_renew)
+    held_renew.add_argument("--capability", required=True)
+    held_renew.add_argument("--head", required=True, help="The head you believe you are on.")
+    held_renew.add_argument("--ttl", type=float, default=900.0)
+
+    held_release = held_sub.add_parser("release", help="Give the lease back.")
+    add_target(held_release)
+    held_release.add_argument("--capability", required=True)
+
+    held_inspect = held_sub.add_parser("inspect", help="Who holds it, and for how much longer.")
+    add_target(held_inspect)
+
+    held_sub.add_parser("scan", help="Find writes to pull request state that skip the lease.")
+
     policy = sub.add_parser("settings", help="Repository settings as policy files (#13).")
     policy.add_argument("--repo", default=None, metavar="OWNER/NAME", help="Defaults to this one.")
     policy.add_argument("--area", default=None, help="One policy area instead of all of them.")
@@ -252,6 +283,8 @@ def main(argv: list[str] | None = None) -> int:
                     target, args.repo or commands.TEMPLATE_REPO, as_json=True
                 )
             return commands.cmd_lifecycle(target, plan_module.Mode(args.command), args)
+        if args.command == "lease":
+            return commands.cmd_lease(root, args)
         if args.command == "settings":
             client_repo = args.repo or gh.Client().current_repo()
             return commands.cmd_settings(root, client_repo, args.settings_command, args.area)
@@ -286,9 +319,15 @@ def main(argv: list[str] | None = None) -> int:
             return commands.cmd_verify(root, args.tier, args.stage, args.base)
         if args.command == "selfhost":
             return commands.cmd_selfhost(root, apply_changes=args.selfhost_command == "apply")
+    except lease.LeaseUnavailable as exc:
+        # A definite no, not a failure to answer -- see the exit code table in
+        # docs/lease-carrier.md.
+        print(f"ai-scheme: {exc}", file=sys.stderr)
+        return EXIT_NO
     except (
         config.ConfigError,
         gh.GhError,
+        lease.LeaseError,
         ownership.OwnershipError,
         selfhost.SelfHostError,
     ) as exc:

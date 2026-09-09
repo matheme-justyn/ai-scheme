@@ -1,0 +1,4 @@
+{
+  "$comment": "Paths allowed to write pull request state without taking a lease. Exact paths only -- no globs, because a glob stops being reviewable the moment it matches something new. Every entry names the issue that tracks removing it.",
+  "exceptions": []
+}

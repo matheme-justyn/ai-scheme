@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from ai_scheme import docs, issues, ownership, selfhost, tools
+from ai_scheme import docs, issues, leasescan, ownership, selfhost, tools
 from ai_scheme.paths import TEMPLATE_RELPATH
 from ai_scheme.tiers import Tier
 
@@ -133,6 +133,9 @@ def stage_static(root: Path) -> StageResult:
                 findings.append(
                     f"{script.relative_to(root)}:{number}: calls {name}, which does not exist"
                 )
+
+    unleased = leasescan.scan(root)
+    findings.extend(str(write) for write in unleased)
 
     workflows = sorted(root.glob(".github/workflows/*.yml"))
     if workflows:

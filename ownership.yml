@@ -105,6 +105,11 @@ paths:
     note: >-
       The documentation map: which of the four layers a thing belongs in, and
       what never belongs in the repository at all.
+  - path: docs/lease-carrier.md
+    kind: template
+    note: >-
+      The pull request lease contract the mechanism layer's protocol is written
+      against: namespace, fields, atomicity, expiry, exit codes.
   - path: docs/milestone-description.md
     kind: template
     note: When a milestone is worth creating, and what its description says.

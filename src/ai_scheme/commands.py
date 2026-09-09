@@ -23,6 +23,7 @@ from ai_scheme import (
     docs,
     gh,
     issues,
+    leasescan,
     milestones,
     ownership,
     pullrequests,
@@ -30,6 +31,9 @@ from ai_scheme import (
     tools,
 )
 from ai_scheme import apply as apply_module
+from ai_scheme import (
+    lease as lease_module,
+)
 from ai_scheme import plan as plan_module
 from ai_scheme import (
     provenance as provenance_module,
@@ -470,6 +474,64 @@ def cmd_settings(root: Path, repo: str, mode: str, area: str | None) -> int:
         )
     if mode == "check" and drifted:
         return EXIT_NO
+    return EXIT_OK
+
+
+def cmd_lease(root: Path, args: Any) -> int:
+    carrier = lease_module.Carrier(root=root, remote=args.remote)
+    pr = getattr(args, "pr", None)
+    lane = getattr(args, "lane", None)
+
+    if args.lease_command == "acquire":
+        taken = lease_module.acquire(
+            carrier,
+            pr=pr,
+            lane=lane,
+            base=args.base,
+            head=args.head,
+            ttl=args.ttl,
+            holder=args.holder or "",
+        )
+        print(json.dumps(taken.as_dict(), indent=2, sort_keys=True))
+        return EXIT_OK
+
+    if args.lease_command == "renew":
+        renewed = lease_module.renew(
+            carrier,
+            pr=pr,
+            lane=lane,
+            capability=args.capability,
+            head=args.head,
+            ttl=args.ttl,
+        )
+        print(json.dumps(renewed.public(), indent=2, sort_keys=True))
+        return EXIT_OK
+
+    if args.lease_command == "release":
+        lease_module.release(carrier, pr=pr, lane=lane, capability=args.capability)
+        print("released")
+        return EXIT_OK
+
+    if args.lease_command == "scan":
+        findings = leasescan.scan(root)
+        if not findings:
+            print("no unleased writes to the pull request control plane")
+            return EXIT_OK
+        print(f"{len(findings)} unleased write(s):", file=sys.stderr)
+        for finding in findings:
+            print(f"  {finding}", file=sys.stderr)
+        print(
+            "add the path to policies/lease-exceptions.json with the issue that tracks it, "
+            "or route the write through scripts/lease.py",
+            file=sys.stderr,
+        )
+        return EXIT_NO
+
+    held = lease_module.inspect(carrier, pr=pr, lane=lane)
+    if held is None:
+        print("not held")
+        return EXIT_OK
+    print(json.dumps(held, indent=2, sort_keys=True))
     return EXIT_OK
 
 
