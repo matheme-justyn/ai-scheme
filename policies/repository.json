@@ -1,0 +1,10 @@
+{
+  "$comment": "Repository settings this project expects. `scripts/apply-repository-settings check` reports drift; nothing changes them without a person running apply.",
+  "allow_squash_merge": true,
+  "allow_merge_commit": false,
+  "allow_rebase_merge": false,
+  "delete_branch_on_merge": true,
+  "has_issues": true,
+  "has_projects": false,
+  "has_wiki": false
+}

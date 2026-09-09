@@ -1,0 +1,55 @@
+# Daily: has anything drifted away from policies/?
+#
+# Read-only. It opens or updates one issue and applies nothing -- changing
+# branch rules or security switches from a schedule is how a repository ends up
+# in a state nobody chose.
+name: Governance drift
+
+on:
+  schedule:
+    - cron: "23 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+
+      - name: Compare settings against policies/
+        id: check
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          scripts/apply-repository-settings check | tee drift.txt
+
+      - name: Open or update one issue
+        if: steps.check.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Repository settings have drifted from policies/"
+          {
+            echo "Read-only check, nothing was changed."
+            echo
+            echo '```'
+            cat drift.txt
+            echo '```'
+            echo
+            echo "Run scripts/apply-repository-settings plan locally to see the same"
+            echo "thing, and apply the areas that are yours to apply."
+          } > body.md
+          body="$(cat body.md)"
+          existing="$(gh issue list --search "in:title Repository settings have drifted" --state open --json number --jq '.[0].number')"
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body" --label type:task
+          fi

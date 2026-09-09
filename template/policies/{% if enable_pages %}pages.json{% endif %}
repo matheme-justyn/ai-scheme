@@ -1,0 +1,5 @@
+{
+  "$comment": "Where the decision site is published. A private repository on a plan without Pages reports DEGRADED rather than silently not publishing.",
+  "enabled": true,
+  "build_type": "workflow"
+}

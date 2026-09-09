@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import sys
 import tempfile
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,9 @@ from ai_scheme import apply as apply_module
 from ai_scheme import plan as plan_module
 from ai_scheme import (
     provenance as provenance_module,
+)
+from ai_scheme import (
+    settings as settings_module,
 )
 from ai_scheme import status as status_module
 from ai_scheme import verify as verify_module
@@ -356,8 +360,26 @@ def cmd_update_check(root: Path, repo: str, as_json: bool) -> int:
     return EXIT_OK
 
 
-def cmd_status(root: Path, as_json: bool, allow_render: bool) -> int:
+def cmd_status(root: Path, as_json: bool, allow_render: bool, check_policy: bool = False) -> int:
     facts = status_module.collect(root, target_version=__version__, allow_render=allow_render)
+    if check_policy:
+        try:
+            client = gh.Client()
+            findings = settings_module.check(
+                client, client.current_repo(), root, release_phase=_release_phase(root)
+            )
+            facts = replace(
+                facts,
+                policy_drift=tuple(
+                    f"{finding.area}: {difference}"
+                    for finding in settings_module.drifted(findings)
+                    for difference in finding.differences
+                ),
+            )
+        except gh.GhError:
+            # Offline, or no permission to read settings. That is a fact about
+            # this run: policy_drift stays "unknown" rather than becoming [].
+            pass
     answer = status_module.judge(facts)
 
     if as_json:
@@ -406,6 +428,49 @@ def cmd_pr_validate(client: gh.Client, repo: str, root: Path, number: int) -> in
     for problem in problems:
         print(f"  {problem}", file=sys.stderr)
     return EXIT_NO
+
+
+def _release_phase(root: Path) -> str:
+    try:
+        return str(config.get(config.load_answers(root), "release_phase"))
+    except config.ConfigError:
+        return "alpha"
+
+
+def cmd_settings(root: Path, repo: str, mode: str, area: str | None) -> int:
+    client = gh.Client()
+    phase = _release_phase(root)
+
+    if mode == "apply":
+        if area is None:
+            print("apply takes --area: one policy at a time, on purpose", file=sys.stderr)
+            return EXIT_UNDETERMINED
+        policy = settings_module.load_policy(root, area)
+        if policy is None:
+            print(f"no policy file for {area}", file=sys.stderr)
+            return EXIT_UNDETERMINED
+        print(settings_module.apply_area(client, repo, area, policy))
+        return EXIT_OK
+
+    findings = settings_module.check(client, repo, root, release_phase=phase)
+    if area:
+        findings = [finding for finding in findings if finding.area == area]
+
+    for finding in findings:
+        print(finding)
+        for difference in finding.differences:
+            print(f"    {difference}")
+
+    drifted = settings_module.drifted(findings)
+    degraded = [f for f in findings if f.verdict is settings_module.Verdict.DEGRADED]
+    if degraded:
+        print(
+            f"{len(degraded)} area(s) degraded: reported, not enforced, and not counted as passing",
+            file=sys.stderr,
+        )
+    if mode == "check" and drifted:
+        return EXIT_NO
+    return EXIT_OK
 
 
 def cmd_docs_validate(root: Path) -> int:

@@ -1,0 +1,6 @@
+{
+  "$comment": "Secret scanning and its push protection. Push protection is the half that matters: a secret caught after the push is already published.",
+  "secret_scanning": "enabled",
+  "secret_scanning_push_protection": "enabled",
+  "dependabot_security_updates": "enabled"
+}
