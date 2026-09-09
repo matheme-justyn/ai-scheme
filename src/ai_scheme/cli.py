@@ -16,7 +16,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from ai_scheme import __version__, config, ownership, selfhost
+from ai_scheme import __version__, config, issues, ownership, selfhost
 from ai_scheme import verify as verify_module
 from ai_scheme.paths import (
     OWNERSHIP_RELPATH,
@@ -80,6 +80,12 @@ def build_parser() -> argparse.ArgumentParser:
     host_sub = host.add_subparsers(dest="selfhost_command", required=True)
     host_sub.add_parser("check", help="Exit 1 if the tree differs from the rendering.")
     host_sub.add_parser("apply", help="Write the rendering into the working tree.")
+
+    issue = sub.add_parser("issue", help="The issue contract: titles and forms (#7).")
+    issue_sub = issue.add_subparsers(dest="issue_command", required=True)
+    issue_title = issue_sub.add_parser("validate-title", help="Check one title against the rules.")
+    issue_title.add_argument("title", help="The title, quoted.")
+    issue_sub.add_parser("check-forms", help="Check the issue forms against the contract.")
 
     check = sub.add_parser("verify", help="Run the checks for a change (#11).")
     check.add_argument(
@@ -188,6 +194,28 @@ def cmd_selfhost(root: Path, apply_changes: bool) -> int:
     return EXIT_NO
 
 
+def cmd_issue_validate_title(title: str) -> int:
+    problems = issues.validate_title(title)
+    if not problems:
+        print("title: ok")
+        return EXIT_OK
+    print(f"title: {len(problems)} problem(s)", file=sys.stderr)
+    for problem in problems:
+        print(f"  {problem}", file=sys.stderr)
+    return EXIT_NO
+
+
+def cmd_issue_check_forms(root: Path) -> int:
+    problems = issues.validate_forms(root)
+    if not problems:
+        print("issue forms: ok")
+        return EXIT_OK
+    print(f"issue forms: {len(problems)} problem(s)", file=sys.stderr)
+    for problem in problems:
+        print(f"  {problem}", file=sys.stderr)
+    return EXIT_NO
+
+
 def cmd_verify(root: Path, tier_name: str | None, stage: str | None, base: str) -> int:
     if tier_name is not None:
         tier = Tier(tier_name)
@@ -226,6 +254,10 @@ def main(argv: list[str] | None = None) -> int:
             if args.ownership_command == "sync":
                 return cmd_ownership_sync(root, args.check)
             return cmd_ownership_list(root)
+        if args.command == "issue":
+            if args.issue_command == "validate-title":
+                return cmd_issue_validate_title(args.title)
+            return cmd_issue_check_forms(root)
         if args.command == "verify":
             return cmd_verify(root, args.tier, args.stage, args.base)
         if args.command == "selfhost":

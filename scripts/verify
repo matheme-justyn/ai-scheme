@@ -8,21 +8,6 @@
 # The checks themselves live in the ai-scheme package, so that they are the
 # same code locally and in CI, and so that they can be tested.
 set -euo pipefail
-
-resolve_runner() {
-  if command -v ai-scheme >/dev/null 2>&1; then
-    echo "ai-scheme"
-    return
-  fi
-  if [ -f pyproject.toml ] && grep -q '^name = "ai-scheme"' pyproject.toml; then
-    echo "uv run ai-scheme"
-    return
-  fi
-  # Pinning this to a released version is #6; until then it tracks the default
-  # branch, which is also what `ai-scheme update` would fetch.
-  echo "uvx --from git+https://github.com/matheme-justyn/ai-scheme ai-scheme"
-}
-
-runner="$(resolve_runner)"
-# shellcheck disable=SC2086 # the runner is a command plus its arguments
-exec $runner verify "$@"
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run verify "$@"
