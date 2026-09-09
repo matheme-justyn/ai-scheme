@@ -82,5 +82,6 @@
 | [0012](./0012-implementation-language.md) | Accepted | 實作語言採 Python 與 uv |
 | [0013](./0013-publishing-target.md) | Accepted | 發布目標只做 GitHub Pages |
 | [0014](./0014-root-self-governance.md) | Accepted | 根目錄自我治理，不維護兩份同步檔案 |
+| [0015](./0015-unknown-is-not-empty.md) | Accepted | 「答不出來」不得降級成「沒事」 |
 
 0002 至 0004 是從上游帶過來的**範例** ADR，不是本 repo 的真實決策，保留作為格式示範。它們的內容不得被當成本 repo 的既定事實引用。
