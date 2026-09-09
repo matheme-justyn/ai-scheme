@@ -1,0 +1,5 @@
+{
+  "$comment": "Workflows get read access by default. A workflow that needs to write says so in its own permissions block, where a reviewer can see it.",
+  "default_workflow_permissions": "read",
+  "can_approve_pull_request_reviews": false
+}

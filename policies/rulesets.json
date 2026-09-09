@@ -1,0 +1,37 @@
+{
+  "$comment": "Branch rules for the default branch. Split in two on purpose (#21): one ruleset may be bypassed by an admin and every use leaves a trace, the other never may. release_phase decides how strict this is, and it only moves forward.",
+  "rulesets": [
+    {
+      "name": "protected-branch",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}},
+      "rules": [
+        {"type": "deletion"},
+        {"type": "non_fast_forward"}
+      ],
+      "bypass_when": {
+        "alpha": "repository_admin",
+        "beta": "repository_admin",
+        "release": "none"
+      }
+    },
+    {
+      "name": "required-checks",
+      "target": "branch",
+      "enforcement": "active",
+      "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}},
+      "rules": [
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": false,
+            "required_status_checks": [{"context": "verify"}]
+          }
+        }
+      ],
+      "bypass_when": {"alpha": "none", "beta": "none", "release": "none"}
+    }
+  ],
+  "required_review_from": "release"
+}

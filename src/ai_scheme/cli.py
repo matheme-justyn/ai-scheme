@@ -141,6 +141,16 @@ def build_parser() -> argparse.ArgumentParser:
             help="Apply this plan instead of producing a new one.",
         )
 
+    policy = sub.add_parser("settings", help="Repository settings as policy files (#13).")
+    policy.add_argument("--repo", default=None, metavar="OWNER/NAME", help="Defaults to this one.")
+    policy.add_argument("--area", default=None, help="One policy area instead of all of them.")
+    policy_sub = policy.add_subparsers(dest="settings_command", required=True)
+    policy_sub.add_parser("plan", help="Read-only: what differs from the policy files.")
+    policy_sub.add_parser("check", help="Read-only: exit 1 when something drifted.")
+    policy_sub.add_parser(
+        "apply", help="Write one area. Branch rules and security switches are not included."
+    )
+
     documents = sub.add_parser("docs", help="The durable documentation layers (#10).")
     documents_sub = documents.add_subparsers(dest="docs_command", required=True)
     documents_sub.add_parser("validate", help="Check specs and decision records.")
@@ -159,6 +169,11 @@ def build_parser() -> argparse.ArgumentParser:
         "--no-render",
         action="store_true",
         help="Skip drift detection; report drift as unknown instead of fetching the template.",
+    )
+    state.add_argument(
+        "--policy",
+        action="store_true",
+        help="Also compare repository settings. Needs gh; without it policy_drift stays unknown.",
     )
 
     pull = sub.add_parser("pr", help="The pull request contract (#8).")
@@ -237,13 +252,21 @@ def main(argv: list[str] | None = None) -> int:
                     target, args.repo or commands.TEMPLATE_REPO, as_json=True
                 )
             return commands.cmd_lifecycle(target, plan_module.Mode(args.command), args)
+        if args.command == "settings":
+            client_repo = args.repo or gh.Client().current_repo()
+            return commands.cmd_settings(root, client_repo, args.settings_command, args.area)
         if args.command == "docs":
             return commands.cmd_docs_validate(root)
         if args.command == "tools":
             return commands.cmd_tools_install(root, args.name)
         if args.command == "status":
             target = args.path.resolve() if args.path else root
-            return commands.cmd_status(target, args.json, allow_render=not args.no_render)
+            return commands.cmd_status(
+                target,
+                args.json,
+                allow_render=not args.no_render,
+                check_policy=args.policy,
+            )
         if args.command == "pr":
             client = gh.Client()
             return commands.cmd_pr_validate(
