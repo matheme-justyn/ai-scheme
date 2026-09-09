@@ -91,6 +91,9 @@ paths:
   - path: docs/collaboration-modes.md
     kind: template
     note: What solo and team mode change, crossed with release_phase.
+  - path: docs/milestone-description.md
+    kind: template
+    note: When a milestone is worth creating, and what its description says.
   - path: docs/config-boundary.md
     kind: template
     note: >-

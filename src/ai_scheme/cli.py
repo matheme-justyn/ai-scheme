@@ -15,8 +15,9 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
+from typing import Any
 
-from ai_scheme import __version__, config, issues, ownership, selfhost
+from ai_scheme import __version__, config, gh, issues, milestones, ownership, selfhost
 from ai_scheme import verify as verify_module
 from ai_scheme.paths import (
     OWNERSHIP_RELPATH,
@@ -86,6 +87,30 @@ def build_parser() -> argparse.ArgumentParser:
     issue_title = issue_sub.add_parser("validate-title", help="Check one title against the rules.")
     issue_title.add_argument("title", help="The title, quoted.")
     issue_sub.add_parser("check-forms", help="Check the issue forms against the contract.")
+
+    stone = sub.add_parser("milestone", help="The milestone contract (#9).")
+    stone.add_argument("--repo", default=None, metavar="OWNER/NAME", help="Defaults to this one.")
+    stone_sub = stone.add_subparsers(dest="milestone_command", required=True)
+
+    stone_create = stone_sub.add_parser(
+        "create", help="Create a milestone and its Feature parent, then preflight."
+    )
+    stone_create.add_argument("--title", required=True, help="Milestone name, without a number.")
+    stone_create.add_argument("--due-on", required=True, help="ISO 8601 date, e.g. 2026-11-30.")
+    stone_create.add_argument(
+        "--description-file", required=True, type=Path, help="The seven-section description."
+    )
+
+    stone_sub.add_parser("detect-open", help="Print the single open milestone, if there is one.")
+
+    stone_check = stone_sub.add_parser("preflight", help="Check a milestone against the contract.")
+    stone_check.add_argument("number", type=int)
+    stone_check.add_argument("--parent", type=int, default=None, help="Feature parent issue.")
+
+    stone_done = stone_sub.add_parser(
+        "reconcile", help="Delivered / closed without merged PR / pending, before closing."
+    )
+    stone_done.add_argument("number", type=int)
 
     check = sub.add_parser("verify", help="Run the checks for a change (#11).")
     check.add_argument(
@@ -216,6 +241,78 @@ def cmd_issue_check_forms(root: Path) -> int:
     return EXIT_NO
 
 
+def _report(subject: str, problems: list[milestones.Problem]) -> int:
+    if not problems:
+        print(f"{subject}: ok")
+        return EXIT_OK
+    print(f"{subject}: {len(problems)} problem(s)", file=sys.stderr)
+    for problem in problems:
+        print(f"  {problem}", file=sys.stderr)
+    return EXIT_NO
+
+
+def cmd_milestone_create(client: gh.Client, repo: str, args: Any) -> int:
+    description = args.description_file.read_text(encoding="utf-8")
+    problems = milestones.validate_description(description)
+    if problems:
+        # Refusing before the milestone exists beats editing it afterwards.
+        return _report(str(args.description_file), problems)
+
+    due_on = args.due_on if "T" in args.due_on else f"{args.due_on}T00:00:00Z"
+    milestone = client.create_milestone(repo, args.title, due_on, description)
+    number = milestone["number"]
+    parent = client.create_issue(
+        repo,
+        milestones.parent_title(number, args.title),
+        f"Milestone {number} 的 Feature parent 兼追蹤 Issue。"
+        f"\n\n完成證據與提前終止都寫在這裡。\n\n## 問題\n\n見 milestone 描述的 Problem 段。"
+        f"\n\n## 完成條件\n\n見 milestone 描述的 Acceptance criteria 段。\n\n## 補充\n\n",
+        ["type:feature"],
+    )
+    print(f"milestone {number}: {args.title}")
+    print(f"parent issue #{parent.get('number')}: {parent.get('title')}")
+    return _report(
+        f"milestone {number}", milestones.preflight(client.milestone(repo, number), parent)
+    )
+
+
+def cmd_milestone_detect_open(client: gh.Client, repo: str) -> int:
+    open_milestones = client.open_milestones(repo)
+    if len(open_milestones) != 1:
+        print(f"{len(open_milestones)} open milestone(s)", file=sys.stderr)
+        return EXIT_NO
+    print(open_milestones[0]["title"])
+    return EXIT_OK
+
+
+def cmd_milestone_preflight(client: gh.Client, repo: str, number: int, parent: int | None) -> int:
+    milestone = client.milestone(repo, number)
+    parent_issue = client.issue(repo, parent) if parent else None
+    return _report(f"milestone {number}", milestones.preflight(milestone, parent_issue))
+
+
+def cmd_milestone_reconcile(client: gh.Client, repo: str, number: int) -> int:
+    raw = client.issues_in_milestone(repo, number)
+    enriched = []
+    for issue in raw:
+        if "pull_request" in issue:
+            continue
+        merged = False
+        if issue.get("state") == "closed":
+            merged = client.closed_by_merged_pull_request(repo, issue["number"])
+        enriched.append({**issue, "merged_pull_request": merged})
+
+    rows = milestones.reconcile(enriched)
+    width = max((len(row.state) for row in rows), default=0)
+    for row in sorted(rows, key=lambda item: item.number):
+        print(f"{row.state.ljust(width)}  #{row.number}  {row.title}")
+    pending = [row for row in rows if row.state != milestones.State.DELIVERED]
+    if pending:
+        print(f"{len(pending)} issue(s) not delivered by a merged pull request", file=sys.stderr)
+        return EXIT_NO
+    return EXIT_OK
+
+
 def cmd_verify(root: Path, tier_name: str | None, stage: str | None, base: str) -> int:
     if tier_name is not None:
         tier = Tier(tier_name)
@@ -258,11 +355,26 @@ def main(argv: list[str] | None = None) -> int:
             if args.issue_command == "validate-title":
                 return cmd_issue_validate_title(args.title)
             return cmd_issue_check_forms(root)
+        if args.command == "milestone":
+            client = gh.Client()
+            repo = args.repo or client.current_repo()
+            if args.milestone_command == "create":
+                return cmd_milestone_create(client, repo, args)
+            if args.milestone_command == "detect-open":
+                return cmd_milestone_detect_open(client, repo)
+            if args.milestone_command == "preflight":
+                return cmd_milestone_preflight(client, repo, args.number, args.parent)
+            return cmd_milestone_reconcile(client, repo, args.number)
         if args.command == "verify":
             return cmd_verify(root, args.tier, args.stage, args.base)
         if args.command == "selfhost":
             return cmd_selfhost(root, apply_changes=args.selfhost_command == "apply")
-    except (config.ConfigError, ownership.OwnershipError, selfhost.SelfHostError) as exc:
+    except (
+        config.ConfigError,
+        gh.GhError,
+        ownership.OwnershipError,
+        selfhost.SelfHostError,
+    ) as exc:
         print(f"ai-scheme: {exc}", file=sys.stderr)
         return EXIT_UNDETERMINED
 
