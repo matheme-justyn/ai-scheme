@@ -19,6 +19,7 @@ import yaml
 from ai_scheme import (
     __version__,
     config,
+    docs,
     gh,
     issues,
     milestones,
@@ -402,6 +403,17 @@ def cmd_pr_validate(client: gh.Client, repo: str, root: Path, number: int) -> in
         print(f"pull request #{number} ({state}): ok")
         return EXIT_OK
     print(f"pull request #{number} ({state}): {len(problems)} problem(s)", file=sys.stderr)
+    for problem in problems:
+        print(f"  {problem}", file=sys.stderr)
+    return EXIT_NO
+
+
+def cmd_docs_validate(root: Path) -> int:
+    problems = docs.validate(root)
+    if not problems:
+        print("specs and decision records: ok")
+        return EXIT_OK
+    print(f"specs and decision records: {len(problems)} problem(s)", file=sys.stderr)
     for problem in problems:
         print(f"  {problem}", file=sys.stderr)
     return EXIT_NO

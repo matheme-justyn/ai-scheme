@@ -141,6 +141,10 @@ def build_parser() -> argparse.ArgumentParser:
             help="Apply this plan instead of producing a new one.",
         )
 
+    documents = sub.add_parser("docs", help="The durable documentation layers (#10).")
+    documents_sub = documents.add_subparsers(dest="docs_command", required=True)
+    documents_sub.add_parser("validate", help="Check specs and decision records.")
+
     tooling = sub.add_parser("tools", help="The pinned external checks (#11).")
     tooling_sub = tooling.add_subparsers(dest="tools_command", required=True)
     tooling_install = tooling_sub.add_parser(
@@ -233,6 +237,8 @@ def main(argv: list[str] | None = None) -> int:
                     target, args.repo or commands.TEMPLATE_REPO, as_json=True
                 )
             return commands.cmd_lifecycle(target, plan_module.Mode(args.command), args)
+        if args.command == "docs":
+            return commands.cmd_docs_validate(root)
         if args.command == "tools":
             return commands.cmd_tools_install(root, args.name)
         if args.command == "status":

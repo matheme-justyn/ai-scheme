@@ -84,6 +84,22 @@ def render(root: Path, destination: Path, *, source: str | None = None) -> None:
         )
 
 
+def seeded_paths(root: Path) -> tuple[str, ...]:
+    """Project-owned prefixes: seeded at create time, never touched again."""
+    try:
+        manifest = ownership.load(root)
+    except ownership.OwnershipError:
+        return ()
+    return tuple(entry.path for entry in manifest.entries if entry.kind == "project")
+
+
+def _is_seeded(relative: str, seeded: tuple[str, ...]) -> bool:
+    return any(
+        relative == entry or (entry.endswith("/") and relative.startswith(entry))
+        for entry in seeded
+    )
+
+
 def managed_blocks(root: Path) -> dict[str, str]:
     """Path -> block name, for the files the template only partly owns."""
     try:
@@ -160,6 +176,7 @@ def compare(root: Path, rendered_root: Path) -> list[Difference]:
     the project, and the template has no opinion about it.
     """
     blocks = managed_blocks(root)
+    seeded = seeded_paths(root)
     differences: list[Difference] = []
     for rendered in _rendered_files(rendered_root):
         relative = rendered.relative_to(rendered_root).as_posix()
@@ -167,7 +184,13 @@ def compare(root: Path, rendered_root: Path) -> list[Difference]:
             continue
         actual = root / relative
         if not actual.is_file():
+            if _is_seeded(relative, seeded):
+                # A project-owned path the project chose not to keep. The
+                # template seeds it once; it does not police it afterwards.
+                continue
             differences.append(Difference(relative, Status.MISSING))
+            continue
+        if _is_seeded(relative, seeded):
             continue
         block = blocks.get(relative)
         if block is None:
@@ -187,12 +210,15 @@ def apply(root: Path, rendered_root: Path) -> list[str]:
     Managed-block files keep everything outside their block.
     """
     blocks = managed_blocks(root)
+    seeded = seeded_paths(root)
     written: list[str] = []
     for rendered in _rendered_files(rendered_root):
         relative = rendered.relative_to(rendered_root).as_posix()
         if relative in UNCOMPARED:
             continue
         destination = root / relative
+        if destination.is_file() and _is_seeded(relative, seeded):
+            continue
         destination.parent.mkdir(parents=True, exist_ok=True)
         block = blocks.get(relative)
         if block is not None and destination.is_file():

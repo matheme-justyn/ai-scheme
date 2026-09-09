@@ -16,7 +16,7 @@ from pathlib import Path
 
 import yaml
 
-from ai_scheme import issues, ownership, selfhost, tools
+from ai_scheme import docs, issues, ownership, selfhost, tools
 from ai_scheme.paths import TEMPLATE_RELPATH
 from ai_scheme.tiers import Tier
 
@@ -220,9 +220,15 @@ def stage_docs(root: Path) -> StageResult:
             resolved = (document.parent / relative).resolve()
             if not resolved.exists():
                 findings.append(f"{relative_document} -> {target}")
-    if findings:
-        return StageResult(False, f"{len(findings)} dangling link(s)", tuple(findings))
-    return StageResult(True, f"{checked} relative link(s) resolve")
+    memory = [str(problem) for problem in docs.validate(root)]
+    if findings or memory:
+        detail = []
+        if findings:
+            detail.append(f"{len(findings)} dangling link(s)")
+        if memory:
+            detail.append(f"{len(memory)} problem(s) in specs or decision records")
+        return StageResult(False, ", ".join(detail), tuple(findings) + tuple(memory))
+    return StageResult(True, f"{checked} relative link(s) resolve; specs and ADRs are well formed")
 
 
 def stage_python(root: Path) -> StageResult:

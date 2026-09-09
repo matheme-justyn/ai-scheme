@@ -21,6 +21,7 @@ The template put these here and nothing else did. Removing them removes the skel
 | `.scheme/provenance.json` | generated | Rebuilt from `the lifecycle command that applied the template`. Which release this project was applied from: tag, the full commit it resolved to, when, and by which CLI version. Rewritten on every apply. |
 | `.vscode/` | template | Editor settings the skeleton keeps in step, plus their explanation. |
 | `README.md` | generated | Rebuilt from `i18n/locales/<readme_primary_language>/readme.toml`. Regenerated from the i18n sources plus the answers file. Edit the sources, not the output. Additional language files follow readme_strategy. |
+| `docs/README.md` | template | The documentation map: which of the four layers a thing belongs in, and what never belongs in the repository at all. |
 | `docs/collaboration-modes.md` | template | What solo and team mode change, crossed with release_phase. |
 | `docs/config-boundary.md` | template | Why a project sees both .scheme/config.yml and config.toml, and which layer owns which keys. |
 | `docs/guides/` | template | Style, git workflow, documentation and writing guides. |

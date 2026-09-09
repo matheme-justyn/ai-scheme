@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Check the durable documentation: spec frontmatter and sections, unique spec
+# ids, and a status and date on every decision record.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run docs validate "$@"
