@@ -112,6 +112,28 @@ def build_parser() -> argparse.ArgumentParser:
             help="Where the plan is written. Defaults to a temporary directory.",
         )
         life.add_argument(
+            "--tag",
+            default=None,
+            help="Template release to apply. Resolved to a full commit SHA and recorded.",
+        )
+        life.add_argument(
+            "--repo",
+            default=None,
+            metavar="OWNER/NAME",
+            help="Template repository the tag belongs to.",
+        )
+        life.add_argument(
+            "--allow-unreleased",
+            action="store_true",
+            help="Run from an unpinned remote source, recorded as a development run.",
+        )
+        if name == "update":
+            life.add_argument(
+                "--check",
+                action="store_true",
+                help="Report whether a newer release exists, and change nothing.",
+            )
+        life.add_argument(
             "--apply-plan",
             type=Path,
             default=None,
@@ -206,6 +228,10 @@ def main(argv: list[str] | None = None) -> int:
             return commands.cmd_issue_check_forms(root)
         if args.command in ("create", "adopt", "update"):
             target = args.path.resolve() if args.path else root
+            if getattr(args, "check", False):
+                return commands.cmd_update_check(
+                    target, args.repo or commands.TEMPLATE_REPO, as_json=True
+                )
             return commands.cmd_lifecycle(target, plan_module.Mode(args.command), args)
         if args.command == "tools":
             return commands.cmd_tools_install(root, args.name)

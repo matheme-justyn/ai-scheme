@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Is a newer release of the skeleton published? Prints JSON and changes
+# nothing. Whether an update exists is a field, not an exit code.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run update --check "$@"

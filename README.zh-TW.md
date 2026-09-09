@@ -32,9 +32,29 @@ Piaget 在法文裡區分兩個字,英文翻譯把它們混在一起了：*sché
 
 它是一個母版打出另一個母版,那個母版才鑄出無窮多的忠實副本——是模板的模板,不是單一物件被重複生產。這種分層結構比「一位工匠、重複產出相同物件」的職業更貼近 `ai-scheme` 實際在做的事:repo 模板本身不是生成出來的那些 repo,它是打出字模、讓那些 repo 得以存在的那個衝壓。
 
+## 怎麼用
+
+每一個生命週期指令預設都是 dry run:先產出 plan,只有 `--apply-plan` 會動到你的專案。
+
+```bash
+# 這個專案現在是什麼狀態?下一步該跑什麼?
+uvx --from git+https://github.com/matheme-justyn/ai-scheme@v0.1.0 ai-scheme status --json
+
+# 把既有專案納入骨架
+uvx --from git+https://github.com/matheme-justyn/ai-scheme@v0.1.0 ai-scheme adopt --tag v0.1.0
+```
+
+一律釘 tag。tag 會被解析成它所指的完整 commit 並寫進 `.scheme/provenance.json`,
+之後更新時才能說出到底變了什麼,而不是相信一個隨時可以被移動的名字。
+`--allow-unreleased` 是給開發模板本身用的,會把那次執行標記為 `development`。
+
+第一個 release 還沒發布,所以上面的指令指向一個還不存在的 tag;在那之前請從 checkout 執行。
+
 ## 現況
 
-這個 repo 剛建立。內容正在從 `my-vibe-scaffolding`／`ai-zpd` 分階段搬遷過來——這段期間可以先看那個 repo 的 `.scaffolding/` 目錄了解哪些東西會搬過來。
+骨架、生命週期指令(`status`、`create`、`adopt`、`update`)、驗證入口,
+以及 Issue、PR、milestone 三份契約都已就位。release 自動化、
+repository settings as code、語言 profile 與決策簡報站尚未完成——見 open issues。
 
 ## 授權
 

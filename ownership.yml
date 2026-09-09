@@ -45,6 +45,12 @@ paths:
   - path: .scheme/config.yml
     kind: template
     note: Copier answers file. The single source of skeleton-layer settings.
+  - path: .scheme/provenance.json
+    kind: generated
+    source: the lifecycle command that applied the template
+    note: >-
+      Which release this project was applied from: tag, the full commit it
+      resolved to, when, and by which CLI version. Rewritten on every apply.
   - path: .scheme/README.md
     kind: template
     note: >-

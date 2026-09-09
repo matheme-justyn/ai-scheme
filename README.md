@@ -32,9 +32,33 @@ Before a single piece of movable type could be cast, someone had to hand-carve e
 
 It's a master pattern that strikes another master pattern, which then casts endless faithful copies — a template of templates, not a single reproduced object. That layered structure is closer to what `ai-scheme` actually is than a simpler "one craftsman, many identical outputs" trade would be: a repo template isn't the generated repos themselves, it's the punch that makes the matrix that makes them possible.
 
+## Using it
+
+Every lifecycle command is a dry run first: it writes a plan, and only
+`--apply-plan` touches your project.
+
+```bash
+# Where does this project stand, and what should run next?
+uvx --from git+https://github.com/matheme-justyn/ai-scheme@v0.1.0 ai-scheme status --json
+
+# Bring an existing project under the skeleton
+uvx --from git+https://github.com/matheme-justyn/ai-scheme@v0.1.0 ai-scheme adopt --tag v0.1.0
+```
+
+Always pin the tag. The tag is resolved to the full commit it points at and
+recorded in `.scheme/provenance.json`, so a later update can tell you what
+changed instead of trusting a name that somebody can move. `--allow-unreleased`
+exists for working on the template itself and marks the run as `development`.
+
+The first release has not been published yet, so the commands above name a tag
+that does not exist. Until it does, run the CLI from a checkout.
+
 ## Status
 
-This repo is newly created. Content is being migrated out of `my-vibe-scaffolding`/`ai-zpd` in stages — see that repo's `.scaffolding/` directory for what's moving here in the meantime.
+The skeleton, the lifecycle commands (`status`, `create`, `adopt`, `update`),
+the verification entry point and the issue, pull request and milestone
+contracts are in place. Release automation, repository settings as code, the
+language profiles and the decision site are not — see the open issues.
 
 ## License
 

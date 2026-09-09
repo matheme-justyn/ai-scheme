@@ -76,6 +76,7 @@ class Plan:
     digest: str
     version: int = PLAN_VERSION
     legacy: list[str] = field(default_factory=list)
+    provenance: dict[str, Any] | None = None
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -88,6 +89,7 @@ class Plan:
             "entries": [entry.as_dict() for entry in self.entries],
             "digest": self.digest,
             "legacy": self.legacy,
+            "provenance": self.provenance,
         }
 
     def to_json(self) -> str:
@@ -117,6 +119,7 @@ class Plan:
             digest=raw["digest"],
             version=raw.get("version", PLAN_VERSION),
             legacy=list(raw.get("legacy") or []),
+            provenance=raw.get("provenance"),
         )
 
     def by_action(self, action: Action) -> list[Entry]:
@@ -130,6 +133,11 @@ class Plan:
             f"- target: `{self.target.path}`",
             f"- target HEAD: `{self.target.head or 'not a git repository'}`",
             f"- source: `{self.source}`" + (f" @ `{self.source_ref}`" if self.source_ref else ""),
+            *(
+                [f"- release: `{self.provenance['tag']}` at `{self.provenance['sha']}`"]
+                if self.provenance and self.provenance.get("tag")
+                else ["- release: none -- this is a development run"]
+            ),
             f"- digest: `{self.digest}`",
             "",
         ]

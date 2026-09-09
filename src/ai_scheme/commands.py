@@ -29,10 +29,16 @@ from ai_scheme import (
 )
 from ai_scheme import apply as apply_module
 from ai_scheme import plan as plan_module
+from ai_scheme import (
+    provenance as provenance_module,
+)
 from ai_scheme import status as status_module
 from ai_scheme import verify as verify_module
 from ai_scheme.paths import OWNERSHIP_RELPATH, UNINSTALL_RELPATH, package_root, repo_root
 from ai_scheme.tiers import Tier, changed_paths, classify
+
+# The template this CLI belongs to, used when a caller does not name one.
+TEMPLATE_REPO = "matheme-justyn/ai-scheme"
 
 EXIT_OK = 0
 EXIT_NO = 1
@@ -261,18 +267,35 @@ def cmd_lifecycle(root: Path, mode: plan_module.Mode, args: Any) -> int:
                 for reason in refused.reasons:
                     print(f"  {reason}", file=sys.stderr)
                 return EXIT_NO
+        if stored.provenance:
+            written_to = provenance_module.write(
+                root, provenance_module.Provenance.from_dict(stored.provenance)
+            )
+            print(f"recorded provenance in {written_to.relative_to(root)}")
         print(f"wrote {len(applied.written)} path(s), left {len(applied.skipped)} alone")
         print("now run scripts/verify")
         return EXIT_OK
 
     answers = _answers_for(root, mode, args.data)
     source = args.source or str(answers.get("_src_path") or package_root())
+
+    client = gh.Client()
+    pinned = provenance_module.pin(
+        client,
+        args.repo or TEMPLATE_REPO,
+        source,
+        args.tag,
+        cli_version=__version__,
+        allow_unreleased=args.allow_unreleased,
+    )
+    # A tag is a name somebody can move; render the commit it resolved to.
+    render_ref = pinned.sha or args.ref
     out = args.out or Path(tempfile.mkdtemp(prefix="ai-scheme-plan-"))
     out.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory(prefix="ai-scheme-candidate-") as temporary:
         rendered = Path(temporary) / "rendered"
-        selfhost.render_into(source, answers, rendered, ref=args.ref)
+        selfhost.render_into(source, answers, rendered, ref=render_ref)
         previous = None
         if mode is plan_module.Mode.UPDATE and answers.get("_commit"):
             # Rendering the recorded commit is what separates "changed locally"
@@ -295,12 +318,13 @@ def cmd_lifecycle(root: Path, mode: plan_module.Mode, args: Any) -> int:
             # What the candidate was rendered from, not where the project came
             # from: apply re-renders with this, and a `_commit` recorded from a
             # dirty working copy is not a ref anything can check out.
-            source_ref=args.ref,
+            source_ref=render_ref,
             answers={key: value for key, value in answers.items() if not key.startswith("_")},
             rendered_root=rendered,
             manifest=manifest,
             previous_root=previous,
         )
+    built.provenance = pinned.as_dict()
 
     plan_path = out / "plan.json"
     report_path = out / "plan.md"
@@ -314,6 +338,20 @@ def cmd_lifecycle(root: Path, mode: plan_module.Mode, args: Any) -> int:
     print(f"plan:   {plan_path}")
     print(f"report: {report_path}")
     print(f"apply:  ai-scheme {mode.value} --apply-plan {plan_path}")
+    return EXIT_OK
+
+
+def cmd_update_check(root: Path, repo: str, as_json: bool) -> int:
+    client = gh.Client()
+    current = provenance_module.read(root)
+    answer = provenance_module.update_check(client, repo, current)
+    if as_json:
+        print(json.dumps(answer, indent=2, sort_keys=True))
+    else:
+        for key, value in answer.items():
+            print(f"{key}: {value}")
+    # Whether an update exists is a field. Only being unable to answer is an
+    # error, and gh.GhError already carries that out through EXIT_UNDETERMINED.
     return EXIT_OK
 
 
