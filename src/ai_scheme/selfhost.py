@@ -54,8 +54,13 @@ def answers_for_rendering(root: Path) -> dict[str, Any]:
     return {key: value for key, value in answers.items() if not key.startswith("_")}
 
 
-def render(root: Path, destination: Path) -> None:
-    """Render `template/` into `destination` using this repository's answers."""
+def render(root: Path, destination: Path, *, source: str | None = None) -> None:
+    """Render a template into `destination` using `root`'s answers.
+
+    `source` defaults to `root` itself, which is the template repository
+    rendering over its own tree. A generated project passes the `_src_path`
+    from its answers file instead.
+    """
     try:
         from copier import run_copy
         from copier._vcs import DirtyLocalWarning
@@ -69,7 +74,7 @@ def render(root: Path, destination: Path) -> None:
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=DirtyLocalWarning)
         run_copy(
-            str(root),
+            source or str(root),
             str(destination),
             data=answers_for_rendering(root),
             defaults=True,
@@ -176,11 +181,11 @@ def apply(root: Path, rendered_root: Path) -> list[str]:
     return written
 
 
-def render_to_temp(root: Path) -> tempfile.TemporaryDirectory[str]:
+def render_to_temp(root: Path, *, source: str | None = None) -> tempfile.TemporaryDirectory[str]:
     """Render into a temporary directory the caller is responsible for closing."""
     handle = tempfile.TemporaryDirectory(prefix="ai-scheme-selfhost-")
     try:
-        render(root, Path(handle.name) / "rendered")
+        render(root, Path(handle.name) / "rendered", source=source)
     except Exception:
         handle.cleanup()
         raise

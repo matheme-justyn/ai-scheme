@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Where this project stands, and what to run next. See
+# docs/status-interface-contract.md -- callers act on next_command and do not
+# infer a state of their own.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run status "$@"
