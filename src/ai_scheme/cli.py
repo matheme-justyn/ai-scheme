@@ -13,6 +13,7 @@ state turns out to be, 2 for being unable to judge.
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -26,6 +27,9 @@ from ai_scheme import (
     ownership,
     pullrequests,
     selfhost,
+)
+from ai_scheme import (
+    status as status_module,
 )
 from ai_scheme import verify as verify_module
 from ai_scheme.paths import (
@@ -96,6 +100,15 @@ def build_parser() -> argparse.ArgumentParser:
     issue_title = issue_sub.add_parser("validate-title", help="Check one title against the rules.")
     issue_title.add_argument("title", help="The title, quoted.")
     issue_sub.add_parser("check-forms", help="Check the issue forms against the contract.")
+
+    state = sub.add_parser("status", help="Where this project stands, and what to run next (#4).")
+    state.add_argument("path", nargs="?", type=Path, default=None, help="Defaults to -C or cwd.")
+    state.add_argument("--json", action="store_true", help="Machine-readable output.")
+    state.add_argument(
+        "--no-render",
+        action="store_true",
+        help="Skip drift detection; report drift as unknown instead of fetching the template.",
+    )
 
     pull = sub.add_parser("pr", help="The pull request contract (#8).")
     pull.add_argument("--repo", default=None, metavar="OWNER/NAME", help="Defaults to this one.")
@@ -328,6 +341,29 @@ def cmd_milestone_reconcile(client: gh.Client, repo: str, number: int) -> int:
     return EXIT_OK
 
 
+def cmd_status(root: Path, as_json: bool, allow_render: bool) -> int:
+    facts = status_module.collect(root, target_version=__version__, allow_render=allow_render)
+    answer = status_module.judge(facts)
+
+    if as_json:
+        print(json.dumps(answer.as_dict(), indent=2, ensure_ascii=False, sort_keys=True))
+        return EXIT_OK
+
+    print(f"state:   {answer.state}")
+    print(f"reason:  {answer.reason}")
+    print(f"version: {answer.current_version or '-'} -> {answer.target_version or '-'}")
+    if answer.drift == status_module.UNKNOWN:
+        print("drift:   unknown (the template could not be rendered)")
+    elif answer.drift:
+        print(f"drift:   {len(answer.drift)} path(s)")
+        for path in answer.drift:
+            print(f"           {path}")
+    if answer.mechanism_config_detected:
+        print("note:    a mechanism-layer config.toml is present; this layer does not read it")
+    print(f"next:    {answer.next_command or 'nothing to do'}")
+    return EXIT_OK
+
+
 def cmd_pr_validate(client: gh.Client, repo: str, root: Path, number: int) -> int:
     pull = client.pull_request(repo, number)
     closed = pullrequests.closes(pull.get("body", ""))
@@ -399,6 +435,9 @@ def main(argv: list[str] | None = None) -> int:
             if args.issue_command == "validate-title":
                 return cmd_issue_validate_title(args.title)
             return cmd_issue_check_forms(root)
+        if args.command == "status":
+            target = args.path.resolve() if args.path else root
+            return cmd_status(target, args.json, allow_render=not args.no_render)
         if args.command == "pr":
             client = gh.Client()
             return cmd_pr_validate(client, args.repo or client.current_repo(), root, args.number)
