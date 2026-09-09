@@ -16,9 +16,17 @@ deliberate, decided on 2026-09-08 and recorded in `ai-scheme` ADR 0008 and
 
 **Same-named keys are independent.** There is no fallback from one to the
 other. If a key exists in both, they mean different things and both values
-stand. This is why the two layers avoid names that look alike: `ai-zpd`'s
-`[project].type` means "which domain modules to load", so this layer expresses
-technology choice as `languages` and never as `project_type`.
+stand.
+
+This is why the two layers avoid names that look alike. The rule came from a
+real collision: the mechanism layer used to have `[project].type`, meaning
+"which domain modules to load" -- close enough to a skeleton-layer
+`project_type` to be read as the same thing, and different enough to be wrong.
+That layer has since moved the module selectors into `[modules]` and renamed
+the key to `domain`, so the collision no longer exists on that side. The
+constraint stays anyway: this layer expresses technology choice as `languages`
+and never as `project_type`. A name that was confusing once is cheap to keep
+avoiding, and the next near-collision will not announce itself.
 
 **Detection is not reading.** `ai-scheme status` and `ai-scheme adopt` report
 that a mechanism-layer config file is present, because a user should be told
