@@ -1,0 +1,22 @@
+# Secret scanning configuration.
+#
+# The default ruleset, plus paths that are not source: build output and
+# dependency caches. Everything else is scanned, and a finding fails the
+# static stage of `scripts/verify`.
+#
+# This file exists rather than a flag on the command line so that the same
+# rules apply wherever gitleaks is run from -- editor plugin, CI, or a laptop.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Build output and dependency caches are not source"
+paths = [
+  '''(^|/)__pycache__/''',
+  '''(^|/)\.venv/''',
+  '''(^|/)node_modules/''',
+  '''(^|/)\.cache/''',
+  '''(^|/)dist/''',
+  '''(^|/)build/''',
+]

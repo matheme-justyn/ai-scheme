@@ -15,6 +15,7 @@ The template put these here and nothing else did. Removing them removes the skel
 | `.github/ISSUE_TEMPLATE/` | template |  |
 | `.github/PULL_REQUEST_TEMPLATE.md` | template |  |
 | `.github/workflows/` | template |  |
+| `.gitleaks.toml` | template | Secret scanning rules, so the same ones apply everywhere. |
 | `.scheme/README.md` | template | Orientation for the answers file. Copier owns the header of config.yml itself, so the explanation of why a project can hold two configuration files lives beside it rather than inside it -- see ADR 0008. |
 | `.scheme/config.yml` | template | Copier answers file. The single source of skeleton-layer settings. |
 | `.vscode/` | template | Editor settings the skeleton keeps in step, plus their explanation. |

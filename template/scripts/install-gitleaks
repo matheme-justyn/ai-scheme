@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Download gitleaks at the version and hash pinned in policies/tools.json, into
+# the shared cache, and print where it landed. A download whose hash does not
+# match the pin is not installed.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run tools install gitleaks
