@@ -1,0 +1,47 @@
+# Verification, hosted. The checks are the same ones `scripts/verify` runs on a
+# laptop -- this file only decides where they run and what the summary says.
+#
+# Every action is pinned to a commit SHA. A moving tag is a credential handed
+# to whoever can move it.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the full history
+        # The tier is derived from a diff against the base branch, so a
+        # shallow clone would classify every change as "cannot tell" -- which
+        # fails closed into the full tier and wastes the run.
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          enable-cache: true
+
+      - name: Choose the tier
+        id: tier
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref || 'main' }}
+        run: |
+          tier="$(python3 scripts/ci_tier.py --base "origin/${BASE_REF}")"
+          echo "tier=${tier}" >> "$GITHUB_OUTPUT"
+          echo "### Verification tier: \`${tier}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Verify
+        run: scripts/verify --tier "${{ steps.tier.outputs.tier }}"

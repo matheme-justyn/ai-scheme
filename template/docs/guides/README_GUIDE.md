@@ -227,7 +227,7 @@ echo "1.2.0" > .template-version
 
 ### 同步模板更新
 
-當模板有新版本時，參考 [TEMPLATE_SYNC.md](../TEMPLATE_SYNC.md)。
+當模板有新版本時，執行 `ai-scheme status` 看下一步指令，再依它指示執行 `ai-scheme update`。
 
 ---
 

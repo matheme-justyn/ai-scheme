@@ -166,7 +166,6 @@ academic_field:
 # BEGIN ai-scheme:ownership-derived
 _exclude:
   - .git
-  - .github/workflows/template-ci.yml
   - copier.yml
   - ownership.yml
 _skip_if_exists:

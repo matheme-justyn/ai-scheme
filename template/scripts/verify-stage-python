@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# One stage of scripts/verify, runnable on its own so that a failure can be
+# rerun without waiting for the stages that already passed.
+set -euo pipefail
+exec "$(dirname "$0")/verify" --stage python

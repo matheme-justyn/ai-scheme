@@ -807,7 +807,7 @@ git checkout -b recovered-branch <commit-hash>
 ## Related Documentation
 
 - **[STYLE_GUIDE](./STYLE_GUIDE.md)** - Code style conventions
-- **[TERMINOLOGY](./terminology/)** - Git-related terms
+- **[TERMINOLOGY](../terminology/)** - Git-related terms
 - **[RELEASE_PROCESS](./RELEASE_PROCESS.md)** - Release procedures (when available)
 - **[ADR_TEMPLATE](./ADR_TEMPLATE.md)** - Architecture decision records (when available)
 

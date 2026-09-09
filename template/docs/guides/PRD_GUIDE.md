@@ -116,7 +116,7 @@ docs/
 
 **Location**: `.scaffolding/docs/templates/PRD_TEMPLATE.md`
 
-See full template with examples: [PRD_TEMPLATE.md](./templates/PRD_TEMPLATE.md)
+See full template with examples: [PRD_TEMPLATE.md](../templates/PRD_TEMPLATE.md)
 
 **Quick structure**:
 # [Project Name] - Product Requirements Document
@@ -390,7 +390,7 @@ Before committing your PRD:
 
 ## Additional Resources
 
-- [PRD Template](./templates/PRD_TEMPLATE.md) - Copy and customize
+- [PRD Template](../templates/PRD_TEMPLATE.md) - Copy and customize
 - [AGENTS.md Guide](./../../AGENTS.md) - How AI reads your docs
 - [Documentation Guidelines](./DOCUMENTATION_GUIDELINES.md) - File organization
 - [Mermaid Documentation](https://mermaid.js.org/) - For diagrams

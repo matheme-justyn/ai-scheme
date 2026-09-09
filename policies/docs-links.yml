@@ -1,0 +1,36 @@
+# Exceptions for the relative-link check that `scripts/verify` runs (stage: docs).
+#
+# The check exists because the three-repository split left more than a dozen
+# links pointing at paths that had moved, and they had to be found by hand. A
+# check with a blanket skip list would grow back the same problem, so every
+# exception here names a reason.
+#
+# Two kinds of exception, and nothing else:
+#
+#   forward_references  -- a document this template intends to ship but has
+#                          not written yet. Delete the entry when it lands.
+#   illustrative        -- a guide whose links describe the reader's project,
+#                          not the repository the guide sits in. Their targets
+#                          are examples and are not supposed to exist here.
+
+version: 1
+
+forward_references:
+  - target: RELEASE_PROCESS.md
+    reason: Release process guide, written with the release automation.
+  - target: FRONTEND_PATTERNS.md
+    reason: Language profile guide, not yet part of any profile.
+  - target: BACKEND_PATTERNS.md
+    reason: Language profile guide, not yet part of any profile.
+
+illustrative:
+  - path: docs/guides/README_BILINGUAL_FORMAT.md
+    reason: Shows translated README filenames a project may or may not have.
+  - path: docs/guides/README_GUIDE.md
+    reason: Quotes README fragments that link to the reader's own documents.
+  - path: docs/guides/PRD_GUIDE.md
+    reason: Quotes PRD fragments that link to the reader's own documents.
+  - path: docs/guides/PROJECT_CONTRIBUTING_GUIDE.md
+    reason: A CONTRIBUTING.md example, linking the reader's issue templates.
+  - path: docs/guides/PROJECT_SECURITY_GUIDE.md
+    reason: A SECURITY.md example, with placeholder link targets.
