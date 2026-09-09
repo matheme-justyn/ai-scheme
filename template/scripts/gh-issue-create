@@ -21,12 +21,9 @@ shift
 
 ai_scheme_run issue validate-title "$title"
 
-if command -v gh >/dev/null 2>&1; then
-  open_milestones="$(gh api "repos/{owner}/{repo}/milestones?state=open" --jq '.[].title' 2>/dev/null || true)"
-  if [ "$(printf '%s\n' "$open_milestones" | grep -c .)" = "1" ]; then
-    echo "note: one open milestone -- ${open_milestones}" >&2
-    echo "      add --milestone \"${open_milestones}\" if this issue is a leaf of it" >&2
-  fi
+if milestone="$("$(dirname "$0")/detect-open-milestone" 2>/dev/null)"; then
+  echo "note: one open milestone -- ${milestone}" >&2
+  echo "      add --milestone \"${milestone}\" if this issue is a leaf of it" >&2
 fi
 
 exec gh issue create --title "$title" "$@"

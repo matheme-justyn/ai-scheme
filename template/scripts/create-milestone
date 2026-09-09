@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Create a milestone and its Feature parent in one step, then check both
+# against the contract.
+#
+#   scripts/create-milestone --title "Verified lifecycle" \
+#     --due-on 2026-11-30 --description-file milestone.md
+#
+# The parent's title is built from the number GitHub hands back, so the two can
+# never disagree. See docs/milestone-description.md.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run milestone create "$@"

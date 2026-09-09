@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Print the single open milestone's title, or exit 1 when there is not exactly
+# one. Callers use this as a hint, never as a gate.
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run milestone detect-open "$@"

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Before closing a milestone: which of its issues were delivered by a merged
+# pull request, which were closed some other way, and which are still open.
+#
+#   scripts/reconcile-milestone 1
+set -euo pipefail
+# shellcheck source=scripts/_runner.sh
+. "$(dirname "$0")/_runner.sh"
+ai_scheme_run milestone reconcile "$@"
