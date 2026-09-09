@@ -9,6 +9,7 @@ hundred lines.
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 import tempfile
 from dataclasses import replace
@@ -38,6 +39,7 @@ from ai_scheme import plan as plan_module
 from ai_scheme import (
     provenance as provenance_module,
 )
+from ai_scheme import release as release_module
 from ai_scheme import (
     settings as settings_module,
 )
@@ -532,6 +534,68 @@ def cmd_lease(root: Path, args: Any) -> int:
         print("not held")
         return EXIT_OK
     print(json.dumps(held, indent=2, sort_keys=True))
+    return EXIT_OK
+
+
+def cmd_release(root: Path, repo: str, args: Any) -> int:
+    if args.release_command == "drift":
+        client = gh.Client()
+        drift = release_module.check_drift(client, repo)
+        print(json.dumps(drift.as_dict(), indent=2, sort_keys=True))
+        # Drift is an observation, not a failure: whether it deserves action is
+        # the reader's call, and the answer is in the payload.
+        return EXIT_OK
+
+    destination = args.out
+    try:
+        slug = str(config.get(config.load_answers(root), "project_slug"))
+    except config.ConfigError:
+        # A project that has not been adopted yet still has a directory name.
+        slug = Path(root).name
+    name = f"{slug}-{args.tag.lstrip('v')}"
+
+    if args.release_command == "build":
+        archive = release_module.source_archive(root, destination, name=name, ref=args.tag)
+        artifacts = [release_module.Artifact(archive, release_module.sha256_of(archive))]
+
+        try:
+            syft = tools.ensure(root, "syft")
+            sbom = destination / release_module.SBOM_FILE
+            with sbom.open("w", encoding="utf-8") as handle:
+                subprocess.run(
+                    [str(syft), f"dir:{root}", "-o", "spdx-json"],
+                    stdout=handle,
+                    check=True,
+                )
+            artifacts.append(release_module.Artifact(sbom, release_module.sha256_of(sbom)))
+        except (tools.ToolError, subprocess.CalledProcessError) as exc:
+            # No SBOM is a smaller lie than an empty file called one.
+            print(f"sbom: not produced -- {exc}", file=sys.stderr)
+            return EXIT_NO
+
+        checksums = release_module.write_checksums(artifacts, destination)
+        print(f"built {len(artifacts)} artefact(s) and {checksums.name}")
+        for artifact in artifacts:
+            print(f"  {artifact.line}")
+        return EXIT_OK
+
+    # verify: download what is actually published and re-hash it.
+    destination.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        ["gh", "release", "download", args.tag, "--dir", str(destination), "--clobber"],
+        check=True,
+    )
+    checksums = destination / release_module.CHECKSUM_FILE
+    if not checksums.is_file():
+        print(f"{release_module.CHECKSUM_FILE} is not on the release", file=sys.stderr)
+        return EXIT_NO
+    problems = release_module.verify_checksums(checksums)
+    if problems:
+        print(f"{len(problems)} artefact(s) do not match what was published:", file=sys.stderr)
+        for problem in problems:
+            print(f"  {problem}", file=sys.stderr)
+        return EXIT_NO
+    print("every published artefact matches its checksum")
     return EXIT_OK
 
 

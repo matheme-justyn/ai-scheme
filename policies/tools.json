@@ -61,6 +61,21 @@
           "sha256": "f9f25499a2c8cc367b3af45df2ea7eeca7fbccceab9c35079968f4b3652194be"
         }
       }
+    },
+    "syft": {
+      "version": "1.51.1",
+      "url": "https://github.com/anchore/syft/releases/download/v{version}/syft_{version}_{platform}.tar.gz",
+      "member": "syft",
+      "platforms": {
+        "darwin-arm64": {
+          "platform": "darwin_arm64",
+          "sha256": "ac063af3b9874769deb7ea1e6d76841e68f9e3bb50cd654226fc977de65532c1"
+        },
+        "linux-x86_64": {
+          "platform": "linux_amd64",
+          "sha256": "8fcb33017a0dc1058298c923c436d19dfa68ae93968e0b423248542e3afb9fc3"
+        }
+      }
     }
   }
 }
