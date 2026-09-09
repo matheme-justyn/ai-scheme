@@ -69,6 +69,57 @@ The carrier never asks GitHub what the head is. The moment it did, it would
 have pull request semantics, and this file would be the protocol instead of the
 carrier. The caller supplies the head it is acting on.
 
+### What that guarantees, and what it does not
+
+The carrier compares **the head the caller states** against the head in the
+lease. So:
+
+- It guarantees that a caller cannot *silently* work under a lease that was
+  taken for a different head. A mismatch is refused, loudly.
+- It does **not** guarantee that a lease stops being valid when the pull
+  request advances. The carrier cannot see that happen.
+
+A caller that forgets to re-read the live head, and passes back the value the
+lease already holds, will renew successfully while the pull request has moved
+on. Nothing here is broken -- that information is not available to this layer
+-- but the protocol has to supply it: **fetch the head before every renew**
+(`gh pr view --json headRefOid`), and pass what you fetched, not what you
+remember.
+
+A test that only proves the carrier refuses a mismatched head proves the
+carrier. It does not prove that the caller asked. Those are two different
+tests, and the second one belongs to the protocol.
+
+## Permissions
+
+Holding a lease on a remote means writing a ref, so it needs push access to the
+repository. A read-only token can `inspect` and nothing else. A caller that
+cannot push cannot hold a lease, and should fail closed rather than proceed
+unprotected: not being able to prove you hold it is the same as not holding it.
+
+## Clocks
+
+`expires_at` is Unix seconds on the clock of whichever machine acquired the
+lease, and expiry is judged against the clock of whichever machine is looking.
+Across machines those differ. Two hosts thirty seconds apart can disagree about
+whether a lease has expired.
+
+The compare-and-swap still prevents two holders -- the loser gets a refusal
+either way -- but the refusal may read oddly, saying a lease is held for a
+negative number of seconds. Give leases a TTL comfortably longer than any skew
+you expect. The carrier does not synchronise clocks and does not pretend to.
+
+## The capability
+
+`acquire` returns it, `renew` and `release` require it, `inspect` never prints
+it. Whoever presents it holds the lease -- that is the whole model.
+
+Storing it is the caller's problem: where it lives, who can read it, and what
+happens when a process dies holding it. The carrier assumes nothing beyond the
+value being presented back. There is no rotation, and `release` ends its life
+by deleting the ref. If rotation is ever added it will be announced to the
+mechanism layer first, because the storage shape would have to change with it.
+
 ## Exit codes
 
 | Code | Meaning |
