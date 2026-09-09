@@ -294,8 +294,8 @@ def test_create_then_status_reports_current(tmp_path: Path) -> None:
     assert main(["status", str(target), "--no-render", "--json"]) == 0
 
 
-def test_the_plan_reports_the_previous_layout(tmp_path: Path, rendered: Path) -> None:
-    """`migrate` in #4's language: the sentinel is read, reported, never written."""
+def test_the_plan_reports_the_mechanism_layer(tmp_path: Path, rendered: Path) -> None:
+    """The other layer's artefacts are detected and reported, never touched (#41)."""
     target = tmp_path / "project"
     git_init(target)
     write(target / ".template-version", "4.0.2\n")
@@ -303,5 +303,5 @@ def test_the_plan_reports_the_previous_layout(tmp_path: Path, rendered: Path) ->
     built = build_plan(target, rendered, plan.Mode.ADOPT)
 
     assert built.legacy == [".template-version"]
-    assert "previous layout" in built.report()
+    assert "mechanism layer is installed" in built.report()
     assert (target / ".template-version").read_text() == "4.0.2\n"

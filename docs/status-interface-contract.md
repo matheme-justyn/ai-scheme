@@ -17,9 +17,11 @@ interface. See ADR 0007.
 2. Read `state` and `next_command`.
 3. Run `next_command`. Every lifecycle command produces a plan first; apply it
    only after the plan has been seen.
-4. Never infer a state from the filesystem, from `.template-version`, from a
-   `VERSION` file, or from anything else. If `status` cannot answer, it says so
-   -- that is not an invitation to guess.
+4. Never infer **this layer's** state from the filesystem, from
+   `.template-version`, from a `VERSION` file, or from anything else. If
+   `status` cannot answer, it says so -- that is not an invitation to guess.
+
+   This binds the skeleton layer only. See "Two version axes" below.
 
 ## Exit codes
 
@@ -32,6 +34,29 @@ interface. See ADR 0007.
 "An update is available" is a `0` with `state: update`. It is not an error, and
 the old "exit 1 means there are updates" convention is not used anywhere here.
 
+## Two version axes
+
+A project keeps up with two things, and this command answers for one of them.
+
+| Axis | Version lives in | Answered by |
+| --- | --- | --- |
+| Skeleton -- CI, policies, conventions, release flow | `.scheme/config.yml` | `ai-scheme status` |
+| Mechanism -- agent tooling, its delivery directory | the mechanism layer's own files | the mechanism layer |
+
+`.template-version` and `.scaffolding/` belong to the mechanism layer. They are
+**current**, not leftovers, and the layer that owns them is expected to read
+them. This layer detects them, reports them in `mechanism_layer_detected`, and
+never reads or compares them -- it has no idea what the mechanism layer's
+target version is, so it must not pretend to answer.
+
+Rule 4 above therefore forbids re-deriving *this* layer's state. It does not
+forbid the other layer from reading its own version file. That is the same
+boundary ADR 0008 draws for configuration, applied to versions.
+
+There is no `migrate` state. A previous incarnation of this layer never
+shipped, so there is nothing to migrate from; a project that has the mechanism
+layer but not this one is simply `adopt`.
+
 ## The payload
 
 | Field | Meaning |
@@ -39,11 +64,13 @@ the old "exit 1 means there are updates" convention is not used anywhere here.
 | `state` | One of the states below |
 | `reason` | Why that state, in words, naming what was **not** checked |
 | `next_command` | The command to run, or `null` when there is nothing to do |
+| `next_command_argv` | The same command as argv, `[]` when there is nothing to do. Use this from a shell rather than `eval` on the string |
 | `current_version` | The template version recorded in `.scheme/config.yml`, or `null` |
 | `target_version` | The template version this `ai-scheme` would apply |
 | `drift` | Paths that differ from the template, `[]`, or `"unknown"` |
 | `policy_drift` | Repository settings that differ, `[]`, or `"unknown"` |
 | `mechanism_config_detected` | Whether a root `config.toml` exists. Detection only -- this layer never reads it (ADR 0008) |
+| `mechanism_layer_detected` | Which mechanism-layer artefacts are present (`.template-version`, `.scaffolding`). Detection only, and not a sign of anything legacy |
 
 `"unknown"` is a real answer and must not be read as "none". It means the check
 could not run -- the template could not be fetched, or GitHub was not reachable.
@@ -55,21 +82,18 @@ A caller that treats `"unknown"` as `[]` is claiming something nobody verified.
 | --- | --- | --- |
 | `create` | The target does not exist, or is an empty directory | `ai-scheme create --plan` |
 | `adopt` | An existing project with no `.scheme/config.yml` | `ai-scheme adopt --plan` |
-| `migrate` | No answers file, but the previous layout's `.template-version` or `.scaffolding/` is there | `ai-scheme adopt --plan` |
 | `update` | The recorded version is behind the template | `ai-scheme update --plan` |
 | `drifted` | Version matches, template-owned files were changed locally | `ai-scheme update --plan` |
 | `policy-only-update` | Version and files match, repository settings do not | `ai-scheme settings apply --plan` |
 | `current` | Everything that could be checked matches | `null` |
 
-Precedence, when more than one could apply: `create`, then `migrate`, then
-`adopt`, then `update`, then `drifted`, then `policy-only-update`, then
-`current`. `update` outranks `drifted` because the update is what will have to
+Precedence, when more than one could apply: `create`, then `adopt`, then
+`update`, then `drifted`, then `policy-only-update`, then `current`. `update` outranks `drifted` because the update is what will have to
 merge the drift; `drift` stays in the payload either way, so a caller that
 cares can look before running anything.
 
-The legacy `.template-version` sentinel is read in the `migrate` state and
-nowhere else. It is never written, and it never takes part in a version
-comparison.
+`current` with `next_command: null` means this layer has nothing to do. It
+says nothing about the other layer, which may well have work of its own.
 
 ## Determinism
 

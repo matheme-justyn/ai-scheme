@@ -19,15 +19,19 @@ not an error and never leaves through a non-zero code.
 from __future__ import annotations
 
 import re
+import shlex
 from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
 from ai_scheme.paths import ANSWERS_RELPATH, MECHANISM_CONFIG_RELPATH
 
-# Written by the layout this template replaces. Read-only, and only in the
-# migrate state -- never written, never used for a version comparison.
-LEGACY_SENTINELS = (Path(".template-version"), Path(".scaffolding"))
+# The mechanism layer's own artefacts. `.scaffolding/` is its delivery
+# directory and `.template-version` records its version, both current and both
+# somebody else's -- so this layer detects them, reports them, and never reads
+# or compares them. There is no "previous layout" to migrate from: the skeleton
+# layer had not shipped anything before this one. See #41 and ADR 0007.
+MECHANISM_MARKERS = (Path(".template-version"), Path(".scaffolding"))
 
 VERSION = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)")
 
@@ -35,7 +39,6 @@ VERSION = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)")
 class State:
     CREATE = "create"
     ADOPT = "adopt"
-    MIGRATE = "migrate"
     UPDATE = "update"
     POLICY_ONLY_UPDATE = "policy-only-update"
     DRIFTED = "drifted"
@@ -45,7 +48,6 @@ class State:
 NEXT_COMMAND = {
     State.CREATE: "ai-scheme create --plan",
     State.ADOPT: "ai-scheme adopt --plan",
-    State.MIGRATE: "ai-scheme adopt --plan",
     State.UPDATE: "ai-scheme update --plan",
     State.POLICY_ONLY_UPDATE: "ai-scheme settings apply --plan",
     State.DRIFTED: "ai-scheme update --plan",
@@ -63,7 +65,7 @@ class Facts:
     empty: bool = True
     is_git_repo: bool = False
     has_answers: bool = False
-    legacy_sentinels: tuple[str, ...] = ()
+    mechanism_markers: tuple[str, ...] = ()
     current_version: str | None = None
     target_version: str | None = None
     drift: tuple[str, ...] | None = None
@@ -81,17 +83,25 @@ class Status:
     drift: list[str] | str = field(default_factory=list)
     policy_drift: list[str] | str = field(default_factory=list)
     mechanism_config_detected: bool = False
+    mechanism_layer_detected: list[str] = field(default_factory=list)
+
+    @property
+    def next_command_argv(self) -> list[str]:
+        """`next_command` as argv, for callers that would otherwise eval it."""
+        return shlex.split(self.next_command) if self.next_command else []
 
     def as_dict(self) -> dict[str, Any]:
         return {
             "state": self.state,
             "reason": self.reason,
             "next_command": self.next_command,
+            "next_command_argv": self.next_command_argv,
             "current_version": self.current_version,
             "target_version": self.target_version,
             "drift": self.drift,
             "policy_drift": self.policy_drift,
             "mechanism_config_detected": self.mechanism_config_detected,
+            "mechanism_layer_detected": self.mechanism_layer_detected,
         }
 
 
@@ -132,17 +142,19 @@ def judge(facts: Facts) -> Status:
             drift=unknowns,
             policy_drift=policy,
             mechanism_config_detected=facts.mechanism_config,
+            mechanism_layer_detected=list(facts.mechanism_markers),
         )
 
     if not facts.exists or facts.empty:
         return answer(State.CREATE, "the target is missing or empty")
 
     if not facts.has_answers:
-        if facts.legacy_sentinels:
+        if facts.mechanism_markers:
             return answer(
-                State.MIGRATE,
-                "no answers file, but the previous layout left "
-                + ", ".join(facts.legacy_sentinels),
+                State.ADOPT,
+                f"no {ANSWERS_RELPATH}; the mechanism layer is installed here ("
+                + ", ".join(facts.mechanism_markers)
+                + "), which this layer reports but never reads",
             )
         return answer(State.ADOPT, f"an existing project with no {ANSWERS_RELPATH}")
 
@@ -182,8 +194,8 @@ def judge(facts: Facts) -> Status:
     return answer(State.CURRENT, reason)
 
 
-def observe_legacy(root: Path) -> tuple[str, ...]:
-    return tuple(sentinel.as_posix() for sentinel in LEGACY_SENTINELS if (root / sentinel).exists())
+def observe_mechanism(root: Path) -> tuple[str, ...]:
+    return tuple(marker.as_posix() for marker in MECHANISM_MARKERS if (root / marker).exists())
 
 
 def is_empty(root: Path) -> bool:
@@ -199,7 +211,7 @@ def observe(root: Path) -> Facts:
         empty=is_empty(root),
         is_git_repo=(root / ".git").exists(),
         has_answers=(root / ANSWERS_RELPATH).is_file(),
-        legacy_sentinels=observe_legacy(root),
+        mechanism_markers=observe_mechanism(root),
         mechanism_config=(root / MECHANISM_CONFIG_RELPATH).is_file(),
     )
 

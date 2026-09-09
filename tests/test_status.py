@@ -37,10 +37,13 @@ def test_adopt_when_a_project_has_no_answers_file() -> None:
     assert answer.state == status.State.ADOPT
 
 
-def test_migrate_when_the_previous_layout_left_a_sentinel() -> None:
-    answer = status.judge(facts(has_answers=False, legacy_sentinels=(".template-version",)))
-    assert answer.state == status.State.MIGRATE
-    assert ".template-version" in answer.reason
+def test_mechanism_artefacts_do_not_make_a_project_legacy() -> None:
+    """`.scaffolding/` is the other layer's current delivery, not a leftover (#41)."""
+    answer = status.judge(facts(has_answers=False, mechanism_markers=(".scaffolding",)))
+
+    assert answer.state == status.State.ADOPT
+    assert "mechanism layer is installed" in answer.reason
+    assert answer.mechanism_layer_detected == [".scaffolding"]
 
 
 def test_update_when_the_recorded_version_is_behind() -> None:
@@ -71,6 +74,15 @@ def test_current_when_everything_checked_matches() -> None:
     answer = status.judge(facts())
     assert answer.state == status.State.CURRENT
     assert answer.next_command is None
+
+
+def test_next_command_is_also_offered_as_argv() -> None:
+    """bash callers should not have to eval a string (#41)."""
+    answer = status.judge(facts(target_version="2.0.0"))
+
+    assert answer.next_command == "ai-scheme update --plan"
+    assert answer.next_command_argv == ["ai-scheme", "update", "--plan"]
+    assert status.judge(facts()).next_command_argv == []
 
 
 def test_unknown_is_not_none() -> None:
@@ -105,7 +117,7 @@ def test_observe_reads_the_filesystem_only(tmp_path: Path) -> None:
 
     assert observed.is_git_repo
     assert observed.has_answers is False
-    assert observed.legacy_sentinels == (".template-version",)
+    assert observed.mechanism_markers == (".template-version",)
     assert observed.mechanism_config is True
 
 

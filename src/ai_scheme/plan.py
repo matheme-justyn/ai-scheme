@@ -135,11 +135,11 @@ class Plan:
         ]
         if self.legacy:
             lines += [
-                "## The previous layout is still here",
+                "## The mechanism layer is installed here",
                 "",
-                "These belong to the layout this template replaces. They are read, never",
-                "written, and never used to compare versions. Delete them once this plan",
-                "has been applied and `ai-scheme status` reports `current`.",
+                "These belong to the other layer, not to this one. They are detected and",
+                "reported, never read, never written, and never used to compare versions --",
+                "this layer's version lives in `.scheme/config.yml`.",
                 "",
                 *(f"- `{path}`" for path in self.legacy),
                 "",
@@ -305,10 +305,11 @@ def classify(
     return entries
 
 
-def legacy_sentinels(root: Path) -> list[str]:
-    from ai_scheme.status import observe_legacy
+def mechanism_markers(root: Path) -> list[str]:
+    """The mechanism layer's artefacts, reported so a plan can mention them."""
+    from ai_scheme.status import observe_mechanism
 
-    return list(observe_legacy(root))
+    return list(observe_mechanism(root))
 
 
 def build(
@@ -324,7 +325,7 @@ def build(
 ) -> Plan:
     entries = classify(mode, root, rendered_root, manifest, previous_root=previous_root)
     return Plan(
-        legacy=legacy_sentinels(root),
+        legacy=mechanism_markers(root),
         mode=mode,
         target=observe_target(root),
         source=source,
