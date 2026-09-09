@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Known vulnerabilities in what this project depends on, from the pinned
+# osv-scanner. Same stage `scripts/verify` runs; this is the standalone entry.
+set -euo pipefail
+exec "$(dirname "$0")/verify" --stage dependencies

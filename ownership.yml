@@ -67,6 +67,11 @@ paths:
     note: Lifecycle and verification entry points.
   - path: hooks/
     kind: template
+  - path: .github/dependabot.yml
+    kind: template
+    note: >-
+      Update groups per ecosystem, chosen from the languages answer. Minor and
+      patch merge themselves once checks pass; a major waits for a person.
   - path: .github/workflows/
     kind: template
   - path: .github/ISSUE_TEMPLATE/

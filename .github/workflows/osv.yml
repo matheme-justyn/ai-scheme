@@ -1,0 +1,24 @@
+# Weekly: are there new advisories against dependencies that did not change?
+#
+# The same scan runs on every change that touches a lockfile, through
+# scripts/verify. This one catches the other half: the advisory published
+# after the code stopped moving.
+name: OSV
+
+on:
+  schedule:
+    - cron: "41 5 * * 2"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+      - run: scripts/verify-dependencies
