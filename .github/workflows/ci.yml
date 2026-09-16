@@ -25,7 +25,7 @@ jobs:
         # The tier is derived from a diff against the base branch, so a
         # shallow clone would classify every change as "cannot tell" -- which
         # fails closed into the full tier and wastes the run.
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           # Nothing here pushes with git; leaving the token in .git/config
